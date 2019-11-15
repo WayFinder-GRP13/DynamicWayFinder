@@ -47,14 +47,9 @@ public class MapActivity extends AppCompatActivity implements LocationListener, 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        StartGatheringData();
+        startGettingLocations();
 
     }
-
-
-    public void StartGatheringData() {
-    }
-
 
     private void startGettingLocations() {
 
