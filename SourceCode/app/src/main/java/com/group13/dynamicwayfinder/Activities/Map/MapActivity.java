@@ -28,7 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 
-public class Map extends AppCompatActivity implements LocationListener, OnMapReadyCallback {
+public class MapActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback {
     private GoogleMap mMap;
     private android.location.LocationManager lm;
     private Marker markerLocation;
