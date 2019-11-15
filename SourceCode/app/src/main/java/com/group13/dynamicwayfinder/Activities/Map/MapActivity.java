@@ -96,6 +96,8 @@ public class MapActivity extends AppCompatActivity implements LocationListener, 
 
         //Starts requesting location updates
         if (canGetLocation) {
+            //This line stops gps being used as its not useful indoors comment out for gps location
+            //over network location
             isGPS=false;
             if (isGPS) {
                 lm.requestLocationUpdates(
