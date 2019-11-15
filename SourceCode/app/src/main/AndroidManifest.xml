@@ -12,6 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <uses-library android:name="org.apache.http.legacy" android:required="false" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCqCdlPmegML3DEtc7BL9X1RFVsm8lEBbE" />
+
         <activity android:name="com.group13.dynamicwayfinder.Activities.Authentication.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,17 +23,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCqCdlPmegML3DEtc7BL9X1RFVsm8lEBbE" />
-        <activity android:name="com.group13.dynamicwayfinder.Activities.Authentication.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity> <activity android:name="com.group13.dynamicwayfinder.Activities.Map.Map">
-    </activity>
+
     </application>
+
 
 </manifest>
