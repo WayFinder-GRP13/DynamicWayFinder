@@ -2,9 +2,16 @@ package com.group13.dynamicwayfinder.Activities.Authentication;
 
 
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +29,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.group13.dynamicwayfinder.Activities.Map.MapActivity;
 import com.group13.dynamicwayfinder.R;
+
+import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,11 +56,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(bundle);
         setContentView(R.layout.activity_main);
 
-        // This 3 lines skips the login
-//        Intent MapActivity;
-//        MapActivity = new Intent(this, Map.class);
-//        startActivity(MapActivity);
-
         mAuth = FirebaseAuth.getInstance();
         rootref = FirebaseDatabase.getInstance().getReference();
         userref = rootref.child("users");
@@ -68,7 +72,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+
         // Check if user is signed in (non-null) and update UI accordingly.
+        requestPermissions();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
             Intent goHome = new Intent(MainActivity.this, MapActivity.class);
@@ -232,6 +238,76 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    public void requestPermissions(){
+        android.location.LocationManager lm = (android.location.LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        boolean isGPS = lm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
+        boolean isNetwork = lm.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
 
+        ArrayList<String> permissions = new ArrayList<>();
+        ArrayList<String> permissionsToRequest;
+
+        int ALL_PERMISSIONS_RESULT = 101;
+
+        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        permissionsToRequest = findUnAskedPermissions(permissions);
+
+
+        if (!isGPS && !isNetwork) {
+            showSettingsAlert();
+        } else {
+            // check permissions
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (permissionsToRequest.size() > 0) {
+                    requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]),
+                            ALL_PERMISSIONS_RESULT);
+                }
+            }
+        }
+    }
+
+
+    public void showSettingsAlert() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setTitle("GPS is not Enabled!");
+        alertDialog.setMessage("Do you want to turn on GPS?");
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        });
+
+        alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        alertDialog.show();
+    }
+    private ArrayList findUnAskedPermissions(ArrayList<String> wanted) {
+        ArrayList result = new ArrayList();
+
+        for (String perm : wanted) {
+            if (!hasPermission(perm)) {
+                result.add(perm);
+            }
+        }
+
+        return result;
+    }
+    private boolean hasPermission(String permission) {
+        if (canAskPermission()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                return (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED);
+            }
+        }
+        return true;
+    }
+
+    private boolean canAskPermission() {
+        return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
+    }
 }
 
