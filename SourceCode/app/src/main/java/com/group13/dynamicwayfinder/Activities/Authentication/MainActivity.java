@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.group13.dynamicwayfinder.Activities.Map.MapActivity;
 import com.group13.dynamicwayfinder.R;
 
 import androidx.annotation.NonNull;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         rootref = FirebaseDatabase.getInstance().getReference();
-        userref = rootref.child("Users");
+        userref = rootref.child("users");
 
         loginbutton = findViewById(R.id.loginbutton);
         signupbutton = findViewById(R.id.signupbutton);
@@ -70,9 +71,9 @@ public class MainActivity extends AppCompatActivity {
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
-            //Intent goHome = new Intent(MainActivity.this, Map.class);
-            //startActivity(goHome);
-            //finish();
+            Intent goHome = new Intent(MainActivity.this, MapActivity.class);
+            startActivity(goHome);
+            finish();
         }
     }
     @Override
@@ -121,9 +122,9 @@ public class MainActivity extends AppCompatActivity {
 
                             Toast.makeText(MainActivity.this, "User Registration Successful.",
                                     Toast.LENGTH_SHORT).show();
-                            //Intent goHome = new Intent(MainActivity.this, Map.class);
-                            //MainActivity.this.startActivity(goHome);
-                            //MainActivity.this.finish();
+                            Intent goHome = new Intent(MainActivity.this, MapActivity.class);
+                            MainActivity.this.startActivity(goHome);
+                            MainActivity.this.finish();
                         } else {
                             Toast.makeText(MainActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
@@ -169,9 +170,9 @@ public class MainActivity extends AppCompatActivity {
                         progressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
-                            //Intent goHome = new Intent(MainActivity.this, Map.class);
-                            //MainActivity.this.startActivity(goHome);
-                            //MainActivity.this.finish();
+                            Intent goHome = new Intent(MainActivity.this, MapActivity.class);
+                            MainActivity.this.startActivity(goHome);
+                            MainActivity.this.finish();
                         } else {
                             Toast.makeText(MainActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
