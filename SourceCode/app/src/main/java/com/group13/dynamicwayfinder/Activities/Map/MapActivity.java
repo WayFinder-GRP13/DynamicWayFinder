@@ -17,10 +17,12 @@ import com.group13.dynamicwayfinder.R;
 import androidx.appcompat.app.AppCompatActivity;
 
 
-public class MapActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback {
+public class MapActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback  {
     private GoogleMap mMap;
     private android.location.LocationManager lm;
     private Marker markerLocation;
+    private Marker AddressmarkerLocation;
+    private AddressFetcher addressFetcher;
 
 
     @Override
@@ -31,11 +33,22 @@ public class MapActivity extends AppCompatActivity implements LocationListener, 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        addressFetcher = new AddressFetcher(this);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        //sets the map as clickable
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng arg0) {
+                // TODO Auto-generated method stub
+                 LatLng CurrentLatLngClick = new LatLng(arg0.latitude,arg0.longitude);
+                addAddressMarker(CurrentLatLngClick);
+                 addressFetcher.sendlocationsAddressRequest(CurrentLatLngClick);
+            }
+        });
         startGettingLocations();
 
     }
@@ -116,5 +129,53 @@ public class MapActivity extends AppCompatActivity implements LocationListener, 
     @Override
     public void onProviderDisabled(String provider) {
 
+    }
+
+    public void updateAddressOnMap(String address) {
+        LatLng location = AddressmarkerLocation.getPosition();
+
+        if (AddressmarkerLocation != null) {
+            AddressmarkerLocation.remove();
+        }
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(location);
+        markerOptions.title(address);
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        if (mMap != null)
+
+            AddressmarkerLocation = mMap.addMarker(markerOptions);
+
+
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(location.latitude, location.longitude))
+                .zoom(16)
+                .build();
+
+        if (mMap != null)
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    public void addAddressMarker(LatLng location) {
+
+        if (AddressmarkerLocation != null) {
+            AddressmarkerLocation.remove();
+        }
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(location);
+        markerOptions.title("Getting Address");
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        if (mMap != null)
+            AddressmarkerLocation = mMap.addMarker(markerOptions);
+
+
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(location.latitude, location.longitude))
+                .zoom(16)
+                .build();
+
+        if (mMap != null)
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 }
