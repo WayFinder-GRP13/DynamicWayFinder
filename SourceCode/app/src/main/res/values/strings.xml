@@ -44,6 +44,6 @@
     <string name="selected_image">selected_image</string>
     <string name="string_next">Next</string>
     <string name="sign_out">Sign Out</string>
-
+    <string name="access_token">pk.eyJ1IjoiZmFraHJhaCIsImEiOiJjazVxdm1pNXkwNjVzM21tcXIxN2J6MjhzIn0.XqW9J8EwpGSVHV1CJDJy-g</string>
 
 </resources>
