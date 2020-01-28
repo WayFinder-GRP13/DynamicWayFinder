@@ -48,6 +48,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private SeekBar seekBarSpeed,seekBarEnv,seekBarCost;
     View bottomSheet;
     private LinearLayout linearEnv,linearCost,linearTime;
+    private helperMap helperMap;
 
     private boolean isChecked = true;
 
@@ -59,6 +60,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         setContentView(R.layout.map_activity);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        helperMap=new helperMap(this);
 
 
 
@@ -67,9 +69,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         // Switch bicycleSwitch = (Switch) findViewById(R.id.bicycleSwitch);
 
         //seekbars code
-
-        seekBarSpeed = findViewById(R.id.simpleSeekBarSpeed);
-        seekBarEnv = findViewById(R.id.simpleSeekBarEnv);
+        helperMap.testMethod();
+        //seekBarSpeed = findViewById(R.id.simpleSeekBarSpeed);
+        seekBarEnv= findViewById(R.id.simpleSeekBarEnv);
         seekBarCost = findViewById(R.id.simpleSeekBarCost);
 
         linearEnv = findViewById(R.id.linear1);
