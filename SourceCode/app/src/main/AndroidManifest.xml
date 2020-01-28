@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -11,12 +12,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <uses-library android:name="org.apache.http.legacy" android:required="false" />
+        <activity android:name=".Activities.Setting.SettingActivity"></activity>
+
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCqCdlPmegML3DEtc7BL9X1RFVsm8lEBbE" />
 
-        <activity android:name="com.group13.dynamicwayfinder.Activities.Authentication.MainActivity">
+        <activity android:name=".Activities.Authentication.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,10 +30,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".Activities.Map.MapActivity" />
-
-
-
     </application>
-
 
 </manifest>

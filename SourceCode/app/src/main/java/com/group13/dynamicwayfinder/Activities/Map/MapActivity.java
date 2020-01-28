@@ -1,9 +1,22 @@
 package com.group13.dynamicwayfinder.Activities.Map;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.Switch;
+import android.widget.Toast;
+
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -13,25 +26,95 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group13.dynamicwayfinder.R;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatCallback;
 
 
-public class MapActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback  {
+public class MapActivity extends AppCompatActivity implements AppCompatCallback, LocationListener, OnMapReadyCallback  {
     private GoogleMap mMap;
     private android.location.LocationManager lm;
     private Marker markerLocation;
     private Marker AddressmarkerLocation;
     private AddressFetcher addressFetcher;
+    FloatingActionButton floatingActionButton;
+    private BottomSheetBehavior mBottomSheetBehavior1;
+    LinearLayout tapactionlayout;
+    private ImageView images;
+    private SeekBar seekBarSpeed,seekBarEnv,seekBarCost;
+    View bottomSheet;
+    private LinearLayout linearEnv,linearCost,linearTime;
+
+    private boolean isChecked = true;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_activity);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+
+
+
+
+        //how to call the switches
+        // Switch bicycleSwitch = (Switch) findViewById(R.id.bicycleSwitch);
+
+        //seekbars code
+
+        seekBarSpeed = findViewById(R.id.simpleSeekBarSpeed);
+        seekBarEnv = findViewById(R.id.simpleSeekBarEnv);
+        seekBarCost = findViewById(R.id.simpleSeekBarCost);
+
+        linearEnv = findViewById(R.id.linear1);
+        linearCost = findViewById(R.id.linear2);
+        linearTime= findViewById(R.id.linear3);
+
+
+
+        floatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
+        tapactionlayout = (LinearLayout) findViewById(R.id.tap_action_layout);
+        bottomSheet = findViewById(R.id.bottom_sheet1);
+        mBottomSheetBehavior1 = BottomSheetBehavior.from(bottomSheet);
+        mBottomSheetBehavior1.setPeekHeight(120);
+        mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        mBottomSheetBehavior1.addBottomSheetCallback (new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    tapactionlayout.setVisibility(View.VISIBLE);
+                }
+
+                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                    tapactionlayout.setVisibility(View.GONE);
+                }
+
+                if (newState == BottomSheetBehavior.STATE_DRAGGING) {
+                    tapactionlayout.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
+
+        tapactionlayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mBottomSheetBehavior1.getState()==BottomSheetBehavior.STATE_COLLAPSED)
+                {
+                    mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+            }
+        });
         mapFragment.getMapAsync(this);
         addressFetcher = new AddressFetcher(this);
     }
@@ -85,6 +168,68 @@ public class MapActivity extends AppCompatActivity implements LocationListener, 
         }
     }
 
+    public void TurnOnOff(View v) {
+
+        if (isChecked == true) {
+
+            isChecked = false;
+
+            switch (v.getId()) {
+
+
+                case R.id.costImage:
+                    seekBarCost.setEnabled(isChecked);
+                    linearCost.setBackgroundColor(Color.parseColor("#ffcccb"));
+                    break;
+
+                case R.id.enviormentImage:
+                    seekBarEnv.setEnabled(isChecked);
+                    linearEnv.setBackgroundColor(Color.parseColor("#ffcccb"));
+
+
+                    break;
+                case R.id.timeImage:
+                    seekBarSpeed.setEnabled(isChecked);
+                    linearTime.setBackgroundColor(Color.parseColor("#ffcccb"));
+
+
+                    break;
+
+                default:
+
+                    break;
+            }
+        } else {
+            isChecked = true;
+
+            switch (v.getId()) {
+
+                case R.id.costImage:
+                    seekBarCost.setEnabled(isChecked);
+                    linearCost.setBackgroundColor(Color.parseColor("#99CD4E"));
+
+                    break;
+                case R.id.enviormentImage:
+                    seekBarEnv.setEnabled(isChecked);
+                    linearEnv.setBackgroundColor(Color.parseColor("#99CD4E"));
+
+
+                    break;
+                case R.id.timeImage:
+                    seekBarSpeed.setEnabled(isChecked);
+                    linearTime.setBackgroundColor(Color.parseColor("#99CD4E"));
+
+
+                    break;
+
+                default:
+
+                    break;
+            }
+
+        }
+
+    }
     @Override
     public void onLocationChanged(Location location) {
         LatLng latlng = new LatLng(location.getLatitude(),location.getLongitude());
@@ -177,5 +322,13 @@ public class MapActivity extends AppCompatActivity implements LocationListener, 
 
         if (mMap != null)
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 }
