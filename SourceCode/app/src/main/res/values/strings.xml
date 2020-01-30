@@ -44,6 +44,7 @@
     <string name="selected_image">selected_image</string>
     <string name="string_next">Next</string>
     <string name="sign_out">Sign Out</string>
+    <string name="title_activity_navigtion">Navigtion</string>
 
 
 </resources>

@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activities.Setting.SettingActivity"></activity>
+        <activity android:name=".Activities.Setting.SettingActivity" />
+        <activity android:name=".Activities.Map.helperMap" />
 
         <uses-library
             android:name="org.apache.http.legacy"

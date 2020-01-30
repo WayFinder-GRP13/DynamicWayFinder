@@ -1,11 +1,13 @@
 package com.group13.dynamicwayfinder.Activities.Map;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MotionEvent;
@@ -34,6 +36,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatCallback;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.nio.channels.Selector;
+
+import static android.graphics.drawable.Drawable.createFromPath;
+
 
 public class MapActivity extends AppCompatActivity implements AppCompatCallback, LocationListener, OnMapReadyCallback  {
     private GoogleMap mMap;
@@ -44,11 +53,14 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     FloatingActionButton floatingActionButton;
     private BottomSheetBehavior mBottomSheetBehavior1;
     LinearLayout tapactionlayout;
-    private ImageView images;
     private SeekBar seekBarSpeed,seekBarEnv,seekBarCost;
     View bottomSheet;
-    private LinearLayout linearEnv,linearCost,linearTime;
-    private helperMap helperMap;
+    //private LinearLayout linearEnv,linearCost,linearTime;
+    private ImageView linearEnv,linearCost,linearTime;
+
+
+
+
 
     private boolean isChecked = true;
 
@@ -60,23 +72,23 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         setContentView(R.layout.map_activity);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        helperMap=new helperMap(this);
-
-
-
 
         //how to call the switches
-        // Switch bicycleSwitch = (Switch) findViewById(R.id.bicycleSwitch);
 
-        //seekbars code
-        helperMap.testMethod();
-        //seekBarSpeed = findViewById(R.id.simpleSeekBarSpeed);
+        //Switch bicycleSwitch = (Switch) findViewById(R.id.bicycleSwitch);
+
+
+
+
+
+
+        seekBarSpeed = findViewById(R.id.simpleSeekBarSpeed);
         seekBarEnv= findViewById(R.id.simpleSeekBarEnv);
         seekBarCost = findViewById(R.id.simpleSeekBarCost);
 
-        linearEnv = findViewById(R.id.linear1);
-        linearCost = findViewById(R.id.linear2);
-        linearTime= findViewById(R.id.linear3);
+        linearEnv = findViewById(R.id.enviormentImage);
+        linearCost = findViewById(R.id.costImage);
+        linearTime= findViewById(R.id.timeImage);
 
 
 
@@ -117,6 +129,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 }
             }
         });
+
+
         mapFragment.getMapAsync(this);
         addressFetcher = new AddressFetcher(this);
     }
@@ -170,7 +184,10 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         }
     }
 
-    public void TurnOnOff(View v) {
+    public void TurnOnOff(View v) throws IOException, XmlPullParserException {
+
+        Resources res = getResources();
+
 
         if (isChecked == true) {
 
@@ -181,18 +198,20 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                 case R.id.costImage:
                     seekBarCost.setEnabled(isChecked);
-                    linearCost.setBackgroundColor(Color.parseColor("#ffcccb"));
+                    linearCost.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border)));
+
                     break;
 
                 case R.id.enviormentImage:
                     seekBarEnv.setEnabled(isChecked);
-                    linearEnv.setBackgroundColor(Color.parseColor("#ffcccb"));
+                    linearEnv.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border)));
+
 
 
                     break;
                 case R.id.timeImage:
                     seekBarSpeed.setEnabled(isChecked);
-                    linearTime.setBackgroundColor(Color.parseColor("#ffcccb"));
+                    linearTime.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border)));
 
 
                     break;
@@ -208,18 +227,19 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                 case R.id.costImage:
                     seekBarCost.setEnabled(isChecked);
-                    linearCost.setBackgroundColor(Color.parseColor("#99CD4E"));
+                    linearCost.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border2)));
+
 
                     break;
                 case R.id.enviormentImage:
                     seekBarEnv.setEnabled(isChecked);
-                    linearEnv.setBackgroundColor(Color.parseColor("#99CD4E"));
+                    linearEnv.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border2)));
 
 
                     break;
                 case R.id.timeImage:
                     seekBarSpeed.setEnabled(isChecked);
-                    linearTime.setBackgroundColor(Color.parseColor("#99CD4E"));
+                    linearTime.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border2)));
 
 
                     break;
