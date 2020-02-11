@@ -22,6 +22,7 @@
     <string name="forgotpwordemail">Email Address</string>
     <string name="sendpwordemail">Reset Password</string>
     <string name="defaultvalue">Default Value</string>
+    <string name="current_location">Current Location</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Firebase database fields -->

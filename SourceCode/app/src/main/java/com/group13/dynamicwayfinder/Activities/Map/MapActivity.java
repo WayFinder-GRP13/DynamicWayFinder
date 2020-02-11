@@ -2,22 +2,28 @@ package com.group13.dynamicwayfinder.Activities.Map;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SearchView;
 import android.widget.SeekBar;
-import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatCallback;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,16 +38,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group13.dynamicwayfinder.R;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatCallback;
 
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.nio.channels.Selector;
-
-import static android.graphics.drawable.Drawable.createFromPath;
+import java.util.List;
 
 
 public class MapActivity extends AppCompatActivity implements AppCompatCallback, LocationListener, OnMapReadyCallback  {
@@ -52,12 +53,23 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private AddressFetcher addressFetcher;
     FloatingActionButton floatingActionButton;
     private BottomSheetBehavior mBottomSheetBehavior1;
+    private TopSheetBehavior mTopSheetBehavior1;
+    private ImageView backArrow;
+
     LinearLayout tapactionlayout;
+    LinearLayout toplayout;
     private SeekBar seekBarSpeed,seekBarEnv,seekBarCost;
     View bottomSheet;
+    View topSheet;
+    private SearchView sv;
     //private LinearLayout linearEnv,linearCost,linearTime;
     private ImageView linearEnv,linearCost,linearTime;
+    private View v;
+    private SearchView sbar;
 
+    private LatLng location;
+
+    private TextView startingLocation,destinationLocation;
 
 
 
@@ -79,6 +91,62 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
 
+        destinationLocation = findViewById(R.id.search3);
+        startingLocation = findViewById(R.id.search);
+
+
+
+
+                    startingLocation.setOnKeyListener(new View.OnKeyListener()
+                    {
+                        public boolean onKey(View v, int keyCode, KeyEvent event)
+                        {
+                            if (event.getAction() == KeyEvent.ACTION_DOWN)
+                            {
+                                switch (keyCode)
+                                {
+                                    case KeyEvent.KEYCODE_DPAD_CENTER:
+                                    case KeyEvent.KEYCODE_ENTER:
+
+                                        onMapSearchStarting(startingLocation);
+
+                                        return true;
+                                    default:
+                                        break;
+                                }
+                            }
+                            return false;
+                        }
+                    });
+
+
+        destinationLocation.setOnKeyListener(new View.OnKeyListener()
+        {
+            public boolean onKey(View v, int keyCode, KeyEvent event)
+            {
+                if (event.getAction() == KeyEvent.ACTION_DOWN)
+                {
+                    switch (keyCode)
+                    {
+                        case KeyEvent.KEYCODE_DPAD_CENTER:
+                        case KeyEvent.KEYCODE_ENTER:
+
+
+                            onMapSearch(destinationLocation);
+
+
+
+
+                            return true;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
+
+
 
 
 
@@ -90,11 +158,66 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         linearCost = findViewById(R.id.costImage);
         linearTime= findViewById(R.id.timeImage);
 
+        backArrow = findViewById(R.id.arrow_back);
+
+        floatingActionButton =  findViewById(R.id.fab);
+        tapactionlayout =  findViewById(R.id.tap_action_layout);
+        toplayout = findViewById(R.id.top_tap_action);
 
 
-        floatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
-        tapactionlayout = (LinearLayout) findViewById(R.id.tap_action_layout);
+
+        topSheet = findViewById(R.id.searchbardisplay);
         bottomSheet = findViewById(R.id.bottom_sheet1);
+
+
+
+        mTopSheetBehavior1 = TopSheetBehavior.from(topSheet);
+        mTopSheetBehavior1.setPeekHeight(150);
+        mTopSheetBehavior1.setState(TopSheetBehavior.STATE_COLLAPSED);
+        mTopSheetBehavior1.setTopSheetCallback(new TopSheetBehavior.TopSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View topSheet, int newState) {
+
+                if (newState == TopSheetBehavior.STATE_COLLAPSED) {
+                    toplayout.setVisibility(View.VISIBLE);
+                }
+
+                if (newState == TopSheetBehavior.STATE_EXPANDED) {
+                    toplayout.setVisibility(View.GONE);
+                }
+
+                if (newState == TopSheetBehavior.STATE_DRAGGING) {
+                    toplayout.setVisibility(View.GONE);
+                }
+
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset, @Nullable Boolean isOpening) {
+
+            }
+        });
+        toplayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mTopSheetBehavior1.getState()==TopSheetBehavior.STATE_COLLAPSED)
+                {
+                    mTopSheetBehavior1.setState(TopSheetBehavior.STATE_EXPANDED);
+
+                    backArrow.setOnClickListener(new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View v) {
+
+                            mTopSheetBehavior1.setState(TopSheetBehavior.STATE_COLLAPSED);
+                        }
+
+                    });
+                }
+            }
+        });
+
+
         mBottomSheetBehavior1 = BottomSheetBehavior.from(bottomSheet);
         mBottomSheetBehavior1.setPeekHeight(120);
         mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -129,10 +252,14 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 }
             }
         });
-
-
         mapFragment.getMapAsync(this);
-        addressFetcher = new AddressFetcher(this);
+
+        //addressFetcher = new AddressFetcher(this);
+
+
+
+
+
     }
 
     @Override
@@ -144,12 +271,56 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             public void onMapClick(LatLng arg0) {
                 // TODO Auto-generated method stub
                  LatLng CurrentLatLngClick = new LatLng(arg0.latitude,arg0.longitude);
-                addAddressMarker(CurrentLatLngClick);
+                 addAddressMarker(CurrentLatLngClick);
                  addressFetcher.sendlocationsAddressRequest(CurrentLatLngClick);
             }
         });
         startGettingLocations();
 
+    }
+
+
+
+    public void onMapSearch(TextView view) {
+
+        String location = view.getText().toString();
+        List<Address> addressList = null;
+
+        if (location != null || !location.equals("")) {
+            Geocoder geocoder = new Geocoder(this);
+            try {
+                addressList = geocoder.getFromLocationName(location, 1);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Address address = addressList.get(0);
+            LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(latLng).title("Marker").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+            //mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        }
+    }
+    public void onMapSearchStarting(TextView view) {
+
+        String location = view.getText().toString();
+        List<Address> addressList = null;
+
+        if (location != null || !location.equals("Current Location")) {
+            Geocoder geocoder = new Geocoder(this);
+            try {
+                addressList = geocoder.getFromLocationName(location, 1);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Address address = addressList.get(0);
+            LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(latLng).title("Marker").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        } else{
+
+            view.setText("Current Location");
+        }
     }
 
     private void startGettingLocations() {
@@ -275,7 +446,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
         markerOptions.title("New Location");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         if (mMap != null)
             markerLocation = mMap.addMarker(markerOptions);
 
@@ -308,7 +479,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(location);
         markerOptions.title(address);
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         if (mMap != null)
 
             AddressmarkerLocation = mMap.addMarker(markerOptions);
@@ -332,7 +503,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(location);
         markerOptions.title("Getting Address");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         if (mMap != null)
             AddressmarkerLocation = mMap.addMarker(markerOptions);
 
@@ -346,11 +517,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//
+//        MenuInflater menuInflater = getMenuInflater();
+//        menuInflater.inflate(R.menu.menu, menu);
+//        return super.onCreateOptionsMenu(menu);
+//    }
 }
