@@ -1,7 +1,5 @@
 package com.group13.dynamicwayfinder.Activities.Authentication;
 
-
-
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -34,7 +32,6 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -124,8 +121,6 @@ public class MainActivity extends AppCompatActivity {
                         progressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
 
-
-
                             Toast.makeText(MainActivity.this, "User Registration Successful.",
                                     Toast.LENGTH_SHORT).show();
                             Intent goHome = new Intent(MainActivity.this, MapActivity.class);
@@ -183,7 +178,6 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }
-
                         // ...
                     }
                 });
