@@ -1,15 +1,23 @@
 package com.group13.dynamicwayfinder.Activities.Map;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -17,6 +25,7 @@ import android.widget.SearchView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,6 +63,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private TopSheetBehavior mTopSheetBehavior1;
     private ImageView backArrow;
     private ListView listView;
+    private Location loc;
+    public double currentLong;
+    public double currentLat;
+
+    LocationManager locationManager;
 
     LinearLayout tapactionlayout;
     LinearLayout toplayout;
@@ -63,21 +77,12 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private SearchView sv;
     //private LinearLayout linearEnv,linearCost,linearTime;
     private ImageView linearEnv,linearCost,linearTime;
-    private View v;
     private SearchView sbar;
     private Boolean firstTime = true;
 
-    private LatLng location;
     private List<LatLng> routeList = new ArrayList<>();
 
-
-
-
-
     private TextView startingLocation,destinationLocation;
-
-
-
 
     private boolean isChecked = true;
 
@@ -149,28 +154,37 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         // starting location once they press enter a tag will show that location
 
+
+
+        startingLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //startingLocation.setText(null);
+            }
+        });
+
         startingLocation.setOnKeyListener(new View.OnKeyListener()
+        {
+            public boolean onKey(View v, int keyCode, KeyEvent event)
+            {
+                if (event.getAction() == KeyEvent.ACTION_DOWN)
+                {
+                    switch (keyCode)
                     {
-                        public boolean onKey(View v, int keyCode, KeyEvent event)
-                        {
-                            if (event.getAction() == KeyEvent.ACTION_DOWN)
-                            {
-                                switch (keyCode)
-                                {
-                                    case KeyEvent.KEYCODE_DPAD_CENTER:
-                                    case KeyEvent.KEYCODE_ENTER:
+                        case KeyEvent.KEYCODE_DPAD_CENTER:
+                        case KeyEvent.KEYCODE_ENTER:
 
 
-                                        onMapSearchStarting(startingLocation);
+                            onMapSearchStarting(startingLocation);
 
-                                        return true;
-                                    default:
-                                        break;
-                                }
-                            }
-                            return false;
-                        }
-                    });
+                            return true;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
 
 
         //once the user clicks enter on the destination textView a map tag will be created
@@ -268,6 +282,14 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                         public void onClick(View v) {
 
                             mTopSheetBehavior1.setState(TopSheetBehavior.STATE_COLLAPSED);
+                            mMap.clear();
+
+                            startingLocation.setText(null);
+                            destinationLocation.setText(null);
+
+
+
+
                         }
 
                     });
@@ -275,7 +297,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             }
         });
 
-    //Program the bottom sheet for user preference
+        //Program the bottom sheet for user preference
 
         mBottomSheetBehavior1 = BottomSheetBehavior.from(bottomSheet);
         mBottomSheetBehavior1.setPeekHeight(120);
@@ -333,9 +355,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onMapLongClick(LatLng arg0) {
                 // TODO Auto-generated method stub
-                 LatLng CurrentLatLngClick = new LatLng(arg0.latitude,arg0.longitude);
-                 addAddressMarker(CurrentLatLngClick);
-                 addressFetcher.sendlocationsAddressRequest(CurrentLatLngClick);
+                LatLng CurrentLatLngClick = new LatLng(arg0.latitude,arg0.longitude);
+                addAddressMarker(CurrentLatLngClick);
+                addressFetcher.sendlocationsAddressRequest(CurrentLatLngClick);
             }
         });
         startGettingLocations();
@@ -370,31 +392,62 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
             // Get the startinglocation value and implement zoom on route
 
+
             TextView startingLocation2 = findViewById(R.id.search);
 
-            String startingLoc = startingLocation2.getText().toString()+" Ireland";
-
-            List<Address> addressList2 = null;
-            Geocoder geocoder2 = new Geocoder(this);
 
 
-            try {
-                addressList2 = geocoder2.getFromLocationName(startingLoc, 5);
+            ////// Need to get current location method
 
-            } catch (IOException e) {
-                e.printStackTrace();
+
+            if(startingLocation2.getText().toString().equals("")){
+
+//              You can use both ways
+
+                System.out.println(currentLong);
+                System.out.println(currentLat);
+
+                Location location2 = mMap.getMyLocation();
+                double logi = location2.getLongitude();
+                double lata = location2.getLatitude();
+                LatLng loca = new LatLng(lata,logi);
+
+                System.out.println(loca);
+//
+                List<LatLng> routeList2 = new ArrayList<>();
+//
+                routeList2.add(loca);
+                routeList2.add(latLng);
+                zoomRoute(mMap,routeList2);
+
+
             }
-            Address address2 = addressList2.get(0);
-            LatLng latLngStart = new LatLng(address2.getLatitude(), address2.getLongitude());
+            else {
 
 
-            List<LatLng> routeList = new ArrayList<>();
-            routeList.add(latLngStart);
-            routeList.add(latLng);
+                String startingLoc = startingLocation2.getText().toString() + " Ireland";
 
-            //System.out.println(routeList);
-            zoomRoute(mMap,routeList);
+                List<Address> addressList2 = null;
+                Geocoder geocoder2 = new Geocoder(this);
 
+
+                try {
+                    addressList2 = geocoder2.getFromLocationName(startingLoc, 5);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Address address2 = addressList2.get(0);
+                LatLng latLngStart = new LatLng(address2.getLatitude(), address2.getLongitude());
+
+
+                List<LatLng> routeList = new ArrayList<>();
+                routeList.add(latLngStart);
+                routeList.add(latLng);
+
+                //System.out.println(routeList);
+                zoomRoute(mMap, routeList);
+            }
 
         }
     }
@@ -461,7 +514,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         for (LatLng latLngPoint : lstLatLngRoute)
             boundsBuilder.include(latLngPoint);
 
-        int routePadding = 200;
+        int routePadding = 150;
         LatLngBounds latLngBounds = boundsBuilder.build();
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding));
@@ -539,10 +592,12 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     @Override
     public void onLocationChanged(Location location) {
 
+        currentLong = location.getLongitude();
+        currentLat = location.getLatitude();
+
         if(firstTime) {
             LatLng latlng = new LatLng(location.getLatitude(), location.getLongitude());
             addMarker(latlng);
-            System.out.println("location happened");
         }
         firstTime=false;
     }
@@ -560,20 +615,14 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             markerLocation.remove();
         }
 
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.title("New Location");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-
-    if (mMap != null)
-            markerLocation = mMap.addMarker(markerOptions);
+        mMap.setMyLocationEnabled(true);
 
 
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(new LatLng(latLng.latitude, latLng.longitude))
                 .zoom(16)
                 .build();
-            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
     @Override
     public void onProviderEnabled(String provider) {
@@ -645,7 +694,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(new LatLng(location.latitude, location.longitude))
                 //removed zoom cause it kept zooming to current gps location
-              .zoom(16)
+                .zoom(16)
                 .build();
 
         if (mMap != null)
@@ -693,9 +742,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 //
 //        return bitmap;
 //    }
-
-
-
 
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
