@@ -14,11 +14,13 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -68,18 +70,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     public double valueCost;
     private ListView searchList;
 
-    LocationManager locationManager;
-
     int step = 1;
     int max = 10;
     int min = 1;
-    String [] arrayList;
 
-    LinearLayout tapactionlayout;
-    LinearLayout toplayout;
+    LinearLayout tapactionlayout,toplayout;
     private SeekBar seekBarSpeed,seekBarEnv,seekBarCost;
-    View bottomSheet;
-    View topSheet;
+    View bottomSheet,topSheet;
     private SearchView sv;
     //private LinearLayout linearEnv,linearCost,linearTime;
     private ImageView linearEnv,linearCost,linearTime;
@@ -89,8 +86,12 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private List<LatLng> routeList = new ArrayList<>();
 
     private TextView startingLocation,destinationLocation;
+    private TextView carTime,trainTime,busTime,walkTime,bicycleTime;
+
 
     private boolean isChecked = true;
+
+    private Switch carSwitch, trainSwitch, busSwitch,walkSwitch,bicycleSwitch;
 
 
 
@@ -101,15 +102,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
 
-        //how to call the switches
-
-        //Switch bicycleSwitch = (Switch) findViewById(R.id.bicycleSwitch);
 
 
 
-        destinationLocation = findViewById(R.id.search3);
-        startingLocation = findViewById(R.id.search);
-        searchList = findViewById(R.id.searchListView);
 
 
 ///   Once user types into the textbar and finalizes location display a list of the top 5 locations
@@ -177,7 +172,146 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
 
+
+
+
+
+
+
+
+        destinationLocation = findViewById(R.id.search3);
+        startingLocation = findViewById(R.id.search);
+        searchList = findViewById(R.id.searchListView);
+
+        carSwitch = findViewById(R.id.carSwitch);
+        busSwitch = findViewById(R.id.busSwitch);
+        trainSwitch = findViewById(R.id.trainSwitch);
+        walkSwitch = findViewById(R.id.walkSwitch);
+        bicycleSwitch = findViewById(R.id.bicycleSwitch);
+
+        carTime = findViewById(R.id.carTime);
+        busTime = findViewById(R.id.busTime);
+        trainTime = findViewById(R.id.trainTime);
+        walkTime = findViewById(R.id.walkTime);
+        bicycleTime = findViewById(R.id.bicycleTime);
+
+
+        seekBarSpeed = findViewById(R.id.simpleSeekBarSpeed);
+        seekBarEnv= findViewById(R.id.simpleSeekBarEnv);
+        seekBarCost = findViewById(R.id.simpleSeekBarCost);
+
+        linearEnv = findViewById(R.id.enviormentImage);
+        linearCost = findViewById(R.id.costImage);
+        linearTime= findViewById(R.id.timeImage);
+
+        backArrow = findViewById(R.id.arrow_back);
+
+        floatingActionButton =  findViewById(R.id.fab);
+        tapactionlayout =  findViewById(R.id.tap_action_layout);
+        toplayout = findViewById(R.id.top_tap_action);
+
+
+
+        topSheet = findViewById(R.id.searchbardisplay);
+        bottomSheet = findViewById(R.id.bottom_sheet1);
+
+
+// program the topSheet for starting point and destination
+
+        seekBarSpeed.setMax( (max - min) / step );
+        seekBarEnv.setMax( (max - min) / step );
+        seekBarCost.setMax( (max - min) / step );
+
+
+
+
         // starting location once they press enter a tag will show that location
+
+
+
+        carSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+                    carTime.setText("20 Mins");
+
+
+
+                } else{
+
+                    carTime.setText("------");
+                }
+            }
+        });
+        trainSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+                    trainTime.setText("7 Mins");
+
+
+
+                } else{
+
+                    trainTime.setText("------");
+                }
+            }
+        });
+        busSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+                    busTime.setText("12 Mins");
+
+
+
+                } else{
+
+                    busTime.setText("------");
+                }
+            }
+        });
+        walkSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+                    walkTime.setText("6 Mins");
+
+
+                } else{
+
+                    walkTime.setText("------");
+                }
+            }
+        });
+        bicycleSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+
+                    bicycleTime.setText("4 Mins");
+
+                } else{
+
+                    bicycleTime.setText("------");
+                }
+            }
+        });
 
 
 
@@ -241,38 +375,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 return false;
             }
         });
-
-
-
-
-
-        seekBarSpeed = findViewById(R.id.simpleSeekBarSpeed);
-        seekBarEnv= findViewById(R.id.simpleSeekBarEnv);
-        seekBarCost = findViewById(R.id.simpleSeekBarCost);
-
-        linearEnv = findViewById(R.id.enviormentImage);
-        linearCost = findViewById(R.id.costImage);
-        linearTime= findViewById(R.id.timeImage);
-
-        backArrow = findViewById(R.id.arrow_back);
-
-        floatingActionButton =  findViewById(R.id.fab);
-        tapactionlayout =  findViewById(R.id.tap_action_layout);
-        toplayout = findViewById(R.id.top_tap_action);
-
-
-
-        topSheet = findViewById(R.id.searchbardisplay);
-        bottomSheet = findViewById(R.id.bottom_sheet1);
-
-
-// program the topSheet for starting point and destination
-
-        seekBarSpeed.setMax( (max - min) / step );
-        seekBarEnv.setMax( (max - min) / step );
-        seekBarCost.setMax( (max - min) / step );
-
-
 
         seekBarEnv.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -752,15 +854,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             return addressList;
 
 
-//                CharSequence text = addressList.toString();
-//
-//
-//
-//                int duration = Toast.LENGTH_LONG;
-//
-//                Toast toast = Toast.makeText(this, text, duration);
-//                toast.show();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -816,30 +909,5 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
-//    public static Bitmap createCustomMarker(Context context, @DrawableRes int resource, String _name) {
-//
-//        @SuppressLint("ResourceType") View marker = ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.drawable.current_location_icon, null);
-//
-//
-//
-//        DisplayMetrics displayMetrics = new DisplayMetrics();
-//        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-//        marker.setLayoutParams(new ViewGroup.LayoutParams(52, ViewGroup.LayoutParams.WRAP_CONTENT));
-//        marker.measure(displayMetrics.widthPixels, displayMetrics.heightPixels);
-//        marker.layout(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels);
-//        marker.buildDrawingCache();
-//        Bitmap bitmap = Bitmap.createBitmap(marker.getMeasuredWidth(), marker.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-//        Canvas canvas = new Canvas(bitmap);
-//        marker.draw(canvas);
-//
-//        return bitmap;
-//    }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//
-//        MenuInflater menuInflater = getMenuInflater();
-//        menuInflater.inflate(R.menu.menu, menu);
-//        return super.onCreateOptionsMenu(menu);
-//    }
 }
