@@ -44,6 +44,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.group13.dynamicwayfinder.R;
+import com.group13.dynamicwayfinder.Utils.RestAPIRequestInformation;
+import com.group13.dynamicwayfinder.Utils.UserSettings.BusSettings;
+import com.group13.dynamicwayfinder.Utils.UserSettings.CarSettings;
+import com.group13.dynamicwayfinder.Utils.UserSettings.CycleSettings;
+import com.group13.dynamicwayfinder.Utils.UserSettings.RailSettings;
+import com.group13.dynamicwayfinder.Utils.UserSettings.ScaleSettings;
+import com.group13.dynamicwayfinder.Utils.UserSettings.UserSettings;
+import com.group13.dynamicwayfinder.Utils.UserSettings.WalkSettings;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -66,6 +74,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private Location loc;
     public double currentLong;
     public double currentLat;
+    private ServerFetcher serverFetcher;
 
     LocationManager locationManager;
 
@@ -203,8 +212,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                             mTopSheetBehavior1.setState(TopSheetBehavior.STATE_COLLAPSED);
 
-                            onMapSearch(destinationLocation);
+                            // server code called here
+                            callServer();
 
+
+                            onMapSearch(destinationLocation);
 
 
 
@@ -340,11 +352,24 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         mapFragment.getMapAsync(this);
 
         addressFetcher = new AddressFetcher(this);
+        serverFetcher = new ServerFetcher(this);
 
 
 
 
 
+    }
+
+    // this method calls the server
+    private void callServer() {
+        BusSettings busSettings = new BusSettings(true,1);
+        RailSettings railSettings = new RailSettings(true,1);
+        CarSettings carSettings = new CarSettings(true,1);
+        CycleSettings cycleSettings = new CycleSettings(true,1);
+        WalkSettings walkSettings = new WalkSettings(true,1);
+        ScaleSettings scaleSettings = new ScaleSettings(5,5,5);
+         UserSettings userSettings = new UserSettings(1,busSettings,railSettings,carSettings,walkSettings,cycleSettings,scaleSettings);
+        serverFetcher.sendServerRequest(new RestAPIRequestInformation(1,"mike","55.5","55.5","55.5","55.5",userSettings));
     }
 
     @Override
@@ -722,6 +747,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         if (mMap != null)
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    // this method draws the route on the map
+    public void updateRouteOnMap(String response) {
+        System.out.println("Response is: "+response);
     }
 
 //    public static Bitmap createCustomMarker(Context context, @DrawableRes int resource, String _name) {

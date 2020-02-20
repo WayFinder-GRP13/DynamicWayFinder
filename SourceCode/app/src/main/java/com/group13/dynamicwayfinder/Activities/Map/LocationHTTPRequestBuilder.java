@@ -19,7 +19,7 @@ public class LocationHTTPRequestBuilder extends HTTPRequestBuilder {
         System.out.println("Array size is: "+inputList.size());
         System.out.println("Array size is: "+inputList.isEmpty());
         //Checks if the list isint empty and is the correct type and its not greater than one point
-        if(inputList.isEmpty()||!inputList.get(0).getClass().getName().contains("LatLng")||(inputList.size()>1)){
+        if(inputList.isEmpty()||!inputList.get(0).getClass().getName().contains("LatLng")||(inputList.size()<1)){
             Log.d(TAG, "URLStringBuilder: The list passed to the URLStringBuilder method was not satisfactory ");
             return null;
         }
