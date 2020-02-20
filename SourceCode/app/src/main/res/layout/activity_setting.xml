@@ -29,7 +29,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Tap to see quick actions"
+                android:text="Tap for preferences"
                 android:textColor="@color/grey"/>
 
         </LinearLayout>

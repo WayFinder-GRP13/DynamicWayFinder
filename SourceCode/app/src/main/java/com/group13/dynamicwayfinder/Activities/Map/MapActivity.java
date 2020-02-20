@@ -1,11 +1,7 @@
 package com.group13.dynamicwayfinder.Activities.Map;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
@@ -13,19 +9,20 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -57,6 +54,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -71,18 +69,23 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private TopSheetBehavior mTopSheetBehavior1;
     private ImageView backArrow;
     private ListView listView;
+    private Address location;
     private Location loc;
     public double currentLong;
     public double currentLat;
     private ServerFetcher serverFetcher;
+    public double valueEnv;
+    public double valueSpeed;
+    public double valueCost;
+    private ListView searchList;
 
-    LocationManager locationManager;
+    int step = 1;
+    int max = 10;
+    int min = 1;
 
-    LinearLayout tapactionlayout;
-    LinearLayout toplayout;
+    LinearLayout tapactionlayout,toplayout;
     private SeekBar seekBarSpeed,seekBarEnv,seekBarCost;
-    View bottomSheet;
-    View topSheet;
+    View bottomSheet,topSheet;
     private SearchView sv;
     //private LinearLayout linearEnv,linearCost,linearTime;
     private ImageView linearEnv,linearCost,linearTime;
@@ -92,8 +95,12 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private List<LatLng> routeList = new ArrayList<>();
 
     private TextView startingLocation,destinationLocation;
+    private TextView carTime,trainTime,busTime,walkTime,bicycleTime;
+
 
     private boolean isChecked = true;
+
+    private Switch carSwitch, trainSwitch, busSwitch,walkSwitch,bicycleSwitch;
 
 
 
@@ -104,14 +111,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
 
-        //how to call the switches
-
-        //Switch bicycleSwitch = (Switch) findViewById(R.id.bicycleSwitch);
 
 
-
-        destinationLocation = findViewById(R.id.search3);
-        startingLocation = findViewById(R.id.search);
 
 
 
@@ -144,7 +145,26 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 //                                    case KeyEvent.KEYCODE_ENTER:
 //
 //
-//                                        listOfAddresses(startingLocation.getText().toString()+" Ireland");
+//                                        List<Address> loca = listOfAddresses(startingLocation.getText().toString());
+//
+//                                        ArrayList<String> ar = new ArrayList<String>();
+//
+//                                        for(Address location:loca) {
+//
+//                                            ar.add(location.getAddressLine(0));
+//                                            System.out.println(ar.size());
+//
+//                                            System.out.println(Arrays.toString(ar.toArray()));
+//
+//                                        }
+//
+//
+//                                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getBaseContext(),
+//                                                android.R.layout.simple_list_item_1, ar);
+//
+//                                        searchList.setAdapter(adapter);
+//
+//
 //                                        return true;
 //                                    default:
 //                                        break;
@@ -161,7 +181,146 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
 
+
+
+
+
+
+
+
+        destinationLocation = findViewById(R.id.search3);
+        startingLocation = findViewById(R.id.search);
+        searchList = findViewById(R.id.searchListView);
+
+        carSwitch = findViewById(R.id.carSwitch);
+        busSwitch = findViewById(R.id.busSwitch);
+        trainSwitch = findViewById(R.id.trainSwitch);
+        walkSwitch = findViewById(R.id.walkSwitch);
+        bicycleSwitch = findViewById(R.id.bicycleSwitch);
+
+        carTime = findViewById(R.id.carTime);
+        busTime = findViewById(R.id.busTime);
+        trainTime = findViewById(R.id.trainTime);
+        walkTime = findViewById(R.id.walkTime);
+        bicycleTime = findViewById(R.id.bicycleTime);
+
+
+        seekBarSpeed = findViewById(R.id.simpleSeekBarSpeed);
+        seekBarEnv= findViewById(R.id.simpleSeekBarEnv);
+        seekBarCost = findViewById(R.id.simpleSeekBarCost);
+
+        linearEnv = findViewById(R.id.enviormentImage);
+        linearCost = findViewById(R.id.costImage);
+        linearTime= findViewById(R.id.timeImage);
+
+        backArrow = findViewById(R.id.arrow_back);
+
+        floatingActionButton =  findViewById(R.id.fab);
+        tapactionlayout =  findViewById(R.id.tap_action_layout);
+        toplayout = findViewById(R.id.top_tap_action);
+
+
+
+        topSheet = findViewById(R.id.searchbardisplay);
+        bottomSheet = findViewById(R.id.bottom_sheet1);
+
+
+// program the topSheet for starting point and destination
+
+        seekBarSpeed.setMax( (max - min) / step );
+        seekBarEnv.setMax( (max - min) / step );
+        seekBarCost.setMax( (max - min) / step );
+
+
+
+
         // starting location once they press enter a tag will show that location
+
+
+
+        carSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+                    carTime.setText("20 Mins");
+
+
+
+                } else{
+
+                    carTime.setText("------");
+                }
+            }
+        });
+        trainSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+                    trainTime.setText("7 Mins");
+
+
+
+                } else{
+
+                    trainTime.setText("------");
+                }
+            }
+        });
+        busSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+                    busTime.setText("12 Mins");
+
+
+
+                } else{
+
+                    busTime.setText("------");
+                }
+            }
+        });
+        walkSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+                    walkTime.setText("6 Mins");
+
+
+                } else{
+
+                    walkTime.setText("------");
+                }
+            }
+        });
+        bicycleSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // do something, the isChecked will be
+                // true if the switch is in the On position
+
+                if(isChecked){
+
+
+                    bicycleTime.setText("4 Mins");
+
+                } else{
+
+                    bicycleTime.setText("------");
+                }
+            }
+        });
 
 
 
@@ -229,31 +388,74 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             }
         });
 
+        seekBarEnv.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                double valueEnv = min + (progress * step);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
 
 
 
 
-        seekBarSpeed = findViewById(R.id.simpleSeekBarSpeed);
-        seekBarEnv= findViewById(R.id.simpleSeekBarEnv);
-        seekBarCost = findViewById(R.id.simpleSeekBarCost);
+            }
+        });
 
-        linearEnv = findViewById(R.id.enviormentImage);
-        linearCost = findViewById(R.id.costImage);
-        linearTime= findViewById(R.id.timeImage);
+        seekBarCost.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-        backArrow = findViewById(R.id.arrow_back);
+                double valueCost = min + (progress * step);
 
-        floatingActionButton =  findViewById(R.id.fab);
-        tapactionlayout =  findViewById(R.id.tap_action_layout);
-        toplayout = findViewById(R.id.top_tap_action);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
 
 
 
-        topSheet = findViewById(R.id.searchbardisplay);
-        bottomSheet = findViewById(R.id.bottom_sheet1);
+            }
+        });
+
+        seekBarSpeed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                double valueSpeed = min + (progress * step);
+
+                //System.out.println(valueSpeed);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
 
 
-// program the topSheet for starting point and destination
+
+
+            }
+        });
+
+
 
         mTopSheetBehavior1 = TopSheetBehavior.from(topSheet);
         mTopSheetBehavior1.setPeekHeight(150);
@@ -561,20 +763,21 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 case R.id.costImage:
                     seekBarCost.setEnabled(isChecked);
                     linearCost.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border)));
-
+                    valueCost=1;
+                    System.out.println(valueCost);
                     break;
 
                 case R.id.enviormentImage:
                     seekBarEnv.setEnabled(isChecked);
                     linearEnv.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border)));
-
+                    valueEnv=1;
 
 
                     break;
                 case R.id.timeImage:
                     seekBarSpeed.setEnabled(isChecked);
                     linearTime.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border)));
-
+                    valueSpeed=1;
 
                     break;
 
@@ -659,11 +862,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     }
 
-    public String listOfAddresses(String str) {
+    public List<Address> listOfAddresses(String str) {
 
         List<Address> addressList = null;
-
-
 
         Geocoder geocoder = new Geocoder(this);
         try {
@@ -675,29 +876,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 //
 //            listView.setAdapter(adapter);
 
-            for(Address location:addressList){
-                System.out.println(location.getAddressLine(0));
-
-                return location.getAddressLine(0);
-
-
-
-                //location.getAddressLine(0);
-            }
-//                CharSequence text = addressList.toString();
-//
-//
-//
-//                int duration = Toast.LENGTH_LONG;
-//
-//                Toast toast = Toast.makeText(this, text, duration);
-//                toast.show();
+            return addressList;
 
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return str;
+        return null;
     }
 
     public void updateAddressOnMap(String address) {
@@ -773,11 +958,4 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 //        return bitmap;
 //    }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//
-//        MenuInflater menuInflater = getMenuInflater();
-//        menuInflater.inflate(R.menu.menu, menu);
-//        return super.onCreateOptionsMenu(menu);
-//    }
 }
