@@ -1,0 +1,249 @@
+<androidx.core.widget.NestedScrollView android:id="@+id/searchbardisplay"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipToPadding="true"
+    android:background="@android:color/white"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:layout_behavior="com.group13.dynamicwayfinder.Activities.Map.TopSheetBehavior">
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+
+    <LinearLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            app:cardBackgroundColor="@android:color/white">
+
+
+            <ImageView
+                android:id="@+id/arrow_back"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:clickable="true"
+                android:src="@drawable/ic_arrow_back" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/current_location_icon"
+                android:orientation="vertical"
+                android:paddingLeft="35dp"
+                android:paddingTop="15dp"
+                />
+
+            <ImageView
+                android:id="@+id/ic_vert2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginLeft="32dp"
+                android:src="@drawable/vert" />
+
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="55dp"
+                android:layout_marginLeft="32dp"
+                android:src="@drawable/destination_image"/>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingLeft="50dp">
+
+
+
+                    <EditText
+                        android:id="@+id/search"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Current Location"
+                        android:inputType="text"
+                        android:imeOptions="actionSearch"
+                        android:textColor="@color/black"
+                        android:textSize="15sp" />
+
+
+                <EditText
+                    android:id="@+id/search3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/ic_vert"
+                    android:hint="Destination"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+
+
+                <LinearLayout
+                    android:layout_width="340dp"
+                    android:layout_height="50dp"
+                    android:orientation="horizontal"
+                    android:paddingTop="20dp">
+
+
+                    <TextView
+                        android:id="@+id/carTime"
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="4 Mins"
+                        android:textColor="@color/grey" />
+
+                    <TextView
+
+                        android:id="@+id/trainTime"
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+
+                        android:gravity="center"
+
+                        android:text="6 Mins"
+
+
+                        android:textColor="@color/grey" />
+
+
+                    <TextView
+
+                        android:id="@+id/WalkTime"
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+
+
+                        android:text="------"
+
+                        android:textColor="@color/grey" />
+
+                    <TextView
+
+                        android:id="@+id/busTime"
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+
+                        android:text="------"
+
+                        android:textColor="@color/grey" />
+
+
+                    <TextView
+
+                        android:id="@+id/BicycleTime"
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="3 Mins"
+
+
+                        android:textColor="@color/grey" />
+
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="340dp"
+                    android:layout_height="50dp"
+                    android:dividerPadding="50dp"
+                    android:orientation="horizontal">
+
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:saveEnabled="true"
+                        android:src="@drawable/iconfinder_ic_directions_car_48px_352315" />
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+
+                        android:saveEnabled="true"
+                        android:src="@drawable/iconfinder_14_171500" />
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+
+                        android:saveEnabled="true"
+                        android:src="@drawable/iconfinder_ic_directions_walk_48px_352319" />
+
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+
+                        android:saveEnabled="true"
+                        android:src="@drawable/iconfinder_16_171497" />
+
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+
+                        android:saveEnabled="true"
+                        android:src="@drawable/bike" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+
+
+    </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/top_tap_action"
+            android:padding="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+
+            <SearchView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Search Location"
+                android:gravity="center"
+                android:textColor="@color/black"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>
+
