@@ -46,6 +46,8 @@
     <string name="string_next">Next</string>
     <string name="sign_out">Sign Out</string>
     <string name="title_activity_navigtion">Navigtion</string>
+    <string name="search">search</string>
+    <string name="connect_to_peer">connect to peer</string>
 
 
 </resources>

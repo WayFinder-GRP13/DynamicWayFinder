@@ -1,20 +1,17 @@
 package com.group13.dynamicwayfinder.Activities.Map;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MotionEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -32,19 +29,17 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.group13.dynamicwayfinder.Activities.PeerToPeer.Peerlist;
 import com.group13.dynamicwayfinder.R;
+import com.group13.dynamicwayfinder.Service.Peer_2_Peer.WiFiServiceDiscoveryActivity;
 import com.group13.dynamicwayfinder.Utils.HTTPGetRequest;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatCallback;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -502,5 +497,20 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.menu, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_wifi:
+                Intent wifiActivity = new Intent(getApplicationContext(), WiFiServiceDiscoveryActivity.class);
+                startActivity(wifiActivity);
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

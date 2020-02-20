@@ -27,10 +27,10 @@
                 android:src="@drawable/ic_dns_red_400_24dp"/>
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="179dp"
                 android:layout_height="wrap_content"
                 android:text="Tap to see quick actions"
-                android:textColor="@color/grey"/>
+                android:textColor="@color/grey" />
 
         </LinearLayout>
 
