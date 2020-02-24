@@ -2,6 +2,7 @@ package com.group13.dynamicwayfinder.Activities.Map;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
@@ -38,10 +39,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.maps.android.PolyUtil;
 import com.group13.dynamicwayfinder.R;
 import com.group13.dynamicwayfinder.Utils.RestAPIRequestInformation;
+import com.group13.dynamicwayfinder.Utils.ServerClasses.FinalRoute;
+import com.group13.dynamicwayfinder.Utils.ServerClasses.Node;
 import com.group13.dynamicwayfinder.Utils.UserSettings.BusSettings;
 import com.group13.dynamicwayfinder.Utils.UserSettings.CarSettings;
 import com.group13.dynamicwayfinder.Utils.UserSettings.CycleSettings;
@@ -50,11 +56,15 @@ import com.group13.dynamicwayfinder.Utils.UserSettings.ScaleSettings;
 import com.group13.dynamicwayfinder.Utils.UserSettings.UserSettings;
 import com.group13.dynamicwayfinder.Utils.UserSettings.WalkSettings;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -78,6 +88,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     public double valueSpeed;
     public double valueCost;
     private ListView searchList;
+    private HashMap<Integer,Float> TransportColour;
 
     int step = 1;
     int max = 10;
@@ -111,7 +122,10 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
 
-
+        TransportColour = new HashMap<>();
+        TransportColour.put(1,BitmapDescriptorFactory.HUE_VIOLET); //bus
+        TransportColour.put(2,BitmapDescriptorFactory.HUE_ORANGE);  //train
+        TransportColour.put(3,BitmapDescriptorFactory.HUE_YELLOW); //cycle
 
 
 
@@ -920,7 +934,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(location);
         markerOptions.title("Getting Address");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         if (mMap != null)
             AddressmarkerLocation = mMap.addMarker(markerOptions);
 
@@ -936,7 +950,75 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     // this method draws the route on the map
     public void updateRouteOnMap(String response) {
-        System.out.println("Response is: "+response);
+        System.out.println("Response is: " + response);
+        ArrayList<FinalRoute> finalRouteList = new ArrayList();
+
+        JSONArray scores = null;
+        try {
+            scores = new JSONArray(response);
+
+            for (int i = 0; i < scores.length(); i++) {
+                JSONObject element = scores.getJSONObject(i);
+                System.out.println(element);
+                String PolyLine = element.getString("overviewPolyline");
+                JSONObject destination = element.getJSONObject("destination");
+                Node destNode = new Node(destination.getString("name"), destination.getInt("stopId"), destination.getInt("transportType"), destination.getDouble("latitude"), destination.getDouble("longitudue"), destination.getDouble("score"));
+                JSONObject origin = element.getJSONObject("origin");
+                Node originNode = new Node(origin.getString("name"), origin.getInt("stopId"), origin.getInt("transportType"), origin.getDouble("latitude"), origin.getDouble("longitudue"), origin.getDouble("score"));
+                finalRouteList.add(new FinalRoute(destNode, originNode, PolyLine));
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            System.out.println("Error couldn't parse result");
+        }
+        boolean firstTime=true;
+        for (FinalRoute route : finalRouteList) {
+            if(firstTime==true) {
+                addTransportMarker(route.getOrigin());
+                firstTime=false;
+            }
+            addTransportMarker(route.getDestination());
+            decodePolyline(route.getOverviewPolyline());
+
+            System.out.println(route.getOverviewPolyline());
+            System.out.println(route.getOrigin().getName());
+            System.out.println(route.getDestination().getName());
+        }
+    }
+
+    public void addTransportMarker(Node point){
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(new LatLng(point.getLatitude(),point.getLongitudue()));
+        markerOptions.title(point.getName()+"\n"+
+                            "Stop ID: "+point.getStopId());
+
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(TransportColour.get(point.getTransportType())));
+        if (mMap != null)
+            mMap.addMarker(markerOptions);
+
+
+    CameraPosition cameraPosition = new CameraPosition.Builder()
+            .target(new LatLng(point.getLatitude(), point.getLongitudue()))
+            .zoom(16)
+            .build();
+
+        if (mMap != null)
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+}
+
+    public void decodePolyline(String Polyline){
+        List<LatLng> decodedPath = PolyUtil.decode(Polyline);
+        com.google.android.gms.maps.model.Polyline line = null;
+        if (line == null) {
+            line = mMap.addPolyline(new PolylineOptions()
+                    .width(8)
+                    .color(Color.rgb(25, 151, 152))
+                    .geodesic(true)
+                    .addAll(decodedPath));
+        }
+
     }
 
 //    public static Bitmap createCustomMarker(Context context, @DrawableRes int resource, String _name) {
