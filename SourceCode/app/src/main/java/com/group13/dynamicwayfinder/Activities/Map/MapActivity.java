@@ -372,7 +372,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                             mTopSheetBehavior1.setState(TopSheetBehavior.STATE_COLLAPSED);
 
                             // server code called here
-                            callServer();
+                            //callServer();
 
 
                             onMapSearch(destinationLocation);
