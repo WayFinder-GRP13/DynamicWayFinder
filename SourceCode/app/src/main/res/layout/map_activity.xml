@@ -41,13 +41,29 @@
                     >
 
                 </com.google.android.material.floatingactionbutton.FloatingActionButton>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/modesMap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/iconfinder_ic_explore_48px_352332"
+                    app:elevation="6dp"
+                    app:pressedTranslationZ="12dp"
+                    app:layout_anchor="@id/map"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginBottom="150dp"
+                    app:backgroundTint="#ffffff"
+                    app:layout_anchorGravity="bottom|right|end"
+                    >
+
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
             </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
         </FrameLayout>
 
 
     <include layout="@layout/search_bar_layout"/>
+    <include layout="@layout/transport_times"/>
 
     <include layout="@layout/activity_setting" />
 
