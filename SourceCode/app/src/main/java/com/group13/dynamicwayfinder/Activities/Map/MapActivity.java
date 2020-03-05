@@ -1,6 +1,7 @@
 package com.group13.dynamicwayfinder.Activities.Map;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -12,10 +13,15 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -26,9 +32,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatCallback;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -43,8 +51,12 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.maps.android.PolyUtil;
 import com.group13.dynamicwayfinder.R;
+import com.group13.dynamicwayfinder.Utils.HTTPGetRequest;
 import com.group13.dynamicwayfinder.Utils.RestAPIRequestInformation;
 import com.group13.dynamicwayfinder.Utils.ServerClasses.FinalRoute;
 import com.group13.dynamicwayfinder.Utils.ServerClasses.Node;
@@ -66,6 +78,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 
 public class MapActivity extends AppCompatActivity implements AppCompatCallback, LocationListener, OnMapReadyCallback  {
@@ -113,6 +126,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     private Switch carSwitch, trainSwitch, busSwitch,walkSwitch,bicycleSwitch;
 
+
+    private String popup_address;
+    private ImageView weather_icon;
+    private ImageButton btn_clear1, btn_clear2;
+    long backKeyPressedTime;
 
 
     @Override
@@ -229,7 +247,35 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         backArrow = findViewById(R.id.arrow_back);
 
+        weather_icon = findViewById(R.id.weather_icon);
+        btn_clear1 = findViewById(R.id.clear_button1);
+        btn_clear1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startingLocation.setText(null);
+            }
+        });
+        btn_clear2 = findViewById(R.id.clear_button2);
+        btn_clear2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                destinationLocation.setText(null);
+            }
+        });
+
         floatingActionButton =  findViewById(R.id.fab);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(new LatLng(mMap.getMyLocation().getLatitude(),mMap.getMyLocation().getLongitude()))
+                        .zoom(16)
+                        .build();
+
+                if (mMap != null)
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
+        });
         tapactionlayout =  findViewById(R.id.tap_action_layout);
         toplayout = findViewById(R.id.top_tap_action);
 
@@ -503,6 +549,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 if(mTopSheetBehavior1.getState()==TopSheetBehavior.STATE_COLLAPSED)
                 {
                     mTopSheetBehavior1.setState(TopSheetBehavior.STATE_EXPANDED);
+                    ImageView weatehr_icon = findViewById(R.id.weather_icon);
+
+                    String imageUrl = "https://openweathermap.org/img/wn/" + getWeather() + "@2x.png";
+
+                    Glide.with(getApplicationContext()).load(imageUrl).into(weatehr_icon);
 
                     backArrow.setOnClickListener(new View.OnClickListener() {
 
@@ -596,12 +647,24 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onMapLongClick(LatLng arg0) {
                 // TODO Auto-generated method stub
-                LatLng CurrentLatLngClick = new LatLng(arg0.latitude,arg0.longitude);
+                LatLng CurrentLatLngClick = new LatLng(arg0.latitude, arg0.longitude);
                 addAddressMarker(CurrentLatLngClick);
                 addressFetcher.sendlocationsAddressRequest(CurrentLatLngClick);
+
+                Popup_window(arg0);
+
             }
         });
         startGettingLocations();
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+
+                Popup_window(marker.getPosition());
+                return false;
+            }
+        });
 
     }
 
@@ -655,11 +718,12 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                 System.out.println(loca);
 //
-                List<LatLng> routeList2 = new ArrayList<>();
-//
-                routeList2.add(loca);
-                routeList2.add(latLng);
-                zoomRoute(mMap,routeList2);
+                //List<LatLng> routeList2 = new ArrayList<>();
+                //routeList2.add(loca);
+                //routeList2.add(latLng);
+                //zoomRoute(mMap,roufteList2);
+                startingLocation.setText("Current Location");
+                getRoute(loca,latLng);
 
 
             }
@@ -682,12 +746,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 LatLng latLngStart = new LatLng(address2.getLatitude(), address2.getLongitude());
 
 
-                List<LatLng> routeList = new ArrayList<>();
-                routeList.add(latLngStart);
-                routeList.add(latLng);
+                //List<LatLng> routeList = new ArrayList<>();
+                //routeList.add(latLngStart);
+                //routeList.add(latLng);
 
+                getRoute(latLngStart, latLng);
                 //System.out.println(routeList);
-                zoomRoute(mMap, routeList);
+                //zoomRoute(mMap, routeList);
             }
 
         }
@@ -755,7 +820,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         for (LatLng latLngPoint : lstLatLngRoute)
             boundsBuilder.include(latLngPoint);
 
-        int routePadding = 150;
+        int routePadding = 200;
         LatLngBounds latLngBounds = boundsBuilder.build();
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding));
@@ -1019,6 +1084,166 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     .addAll(decodedPath));
         }
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(mTopSheetBehavior1.getState() == TopSheetBehavior.STATE_EXPANDED)
+            mTopSheetBehavior1.setState(TopSheetBehavior.STATE_COLLAPSED);
+        else{
+            if (System.currentTimeMillis() > backKeyPressedTime + 2000) {
+                backKeyPressedTime = System.currentTimeMillis();
+                mMap.clear();
+                startingLocation.setText(null);
+                destinationLocation.setText(null);
+
+            }
+            else{
+                finish();
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
+        }
+    }
+
+    public String getWeather(){
+
+        HTTPGetRequest weather_API = new HTTPGetRequest();
+        String response = null;
+        JsonParser parser = new JsonParser();
+
+        try {
+            response = weather_API.execute("https://group13aseserver.herokuapp.com/byCity/IE/dublin").get();
+            Object object = parser.parse(response);
+            JsonObject jsonObject = (JsonObject)object;
+            JsonArray all_weather = (JsonArray) jsonObject.get("weather");
+
+            JsonObject weather = (JsonObject) all_weather.get(0);
+            String icon = weather.get("icon").toString();
+
+            String unique_char =  "[^\uAC00-\uD7A3xfe0-9a-zA-Z\\s]";
+            icon  =icon.replaceAll(unique_char, "");
+            Log.d("weathericon", icon.toString());
+
+            return icon;
+
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void getRoute(LatLng start, LatLng end){
+
+        ArrayList<LatLng> point_list = new ArrayList<>();
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.color(Color.BLUE);
+        polylineOptions.width(15);
+
+        String tomtom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
+                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=pedestrian&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
+
+        Log.d("route_api", tomtom);
+
+        String response = null;
+        HTTPGetRequest routeAPI = new HTTPGetRequest();
+        JsonParser parser = new JsonParser();
+
+        try {
+            response = routeAPI.execute(tomtom).get();
+            Log.d("route_api", response);
+            if(response != null){
+                Log.d("route_api", tomtom);
+                Object object = parser.parse(response);
+                JsonObject jsonObject = (JsonObject) object;
+                JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
+                JsonObject object2 = (JsonObject) jsonArray.get(0);
+                JsonArray routeArray = (JsonArray) object2.get("legs");
+                JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
+                JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
+
+                int min,hour =0;
+                int sec;
+                sec = summary.get("travelTimeInSeconds").getAsInt();
+
+                hour = sec / 3600;
+                min =  sec % 3600 / 60;
+
+                if(hour == 0){
+                    walkTime.setText(min + " Mins");
+
+                }else{
+                    walkTime.setText(hour + " H " + min + " M");
+                }
+                for (int i=0; i<routePoint.size(); i++){
+                    JsonObject point = (JsonObject) routePoint.get(i);
+                    point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
+                }
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        polylineOptions.addAll(point_list);
+        mMap.addPolyline(polylineOptions);
+        zoomRoute(mMap,point_list);
+    }
+
+    public void Popup_window(final LatLng position){
+
+        DisplayMetrics dm = MapActivity.this.getResources().getDisplayMetrics(); //디바이스 화면크기를 구하기위해
+        int width = dm.widthPixels; //디바이스 화면 너비
+        //int height = dm.heightPixels; //디바이스 화면 높이
+
+        View dialogView = getLayoutInflater().inflate(R.layout.popup,null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+        builder.setView(dialogView);
+        builder.setCancelable(false);
+
+        TextView address_popup = (TextView)dialogView.findViewById(R.id.popup_address);
+        Button direction_popup = (Button)dialogView.findViewById(R.id.popup_direction);
+
+        Geocoder geocoder = new Geocoder(getApplicationContext());
+        List<Address> addressList = null;
+
+        try {
+            addressList = geocoder.getFromLocation(position.latitude,position.longitude, 1);
+            popup_address = addressList.get(0).getAddressLine(0);
+            address_popup.setText(popup_address);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        direction_popup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                startingLocation.setText("Current Location");
+                destinationLocation.setText(popup_address);
+                LatLng cur_loc = new LatLng(mMap.getMyLocation().getLatitude(),mMap.getMyLocation().getLongitude());
+                getRoute(cur_loc,position);
+            }
+        });
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent keyEvent) {
+                if(keyCode == keyEvent.KEYCODE_BACK){
+                    alertDialog.dismiss();
+                }
+                return false;
+            }
+        });
+        alertDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        alertDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+
+        WindowManager.LayoutParams params = alertDialog.getWindow().getAttributes();
+        params.y = 700;
+        alertDialog.getWindow().setAttributes(params);
+        alertDialog.show();
     }
 
 //    public static Bitmap createCustomMarker(Context context, @DrawableRes int resource, String _name) {
