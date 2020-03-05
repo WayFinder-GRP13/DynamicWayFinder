@@ -20,6 +20,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -141,6 +142,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_activity);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -676,6 +678,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             }
         });
         startGettingLocations();
+        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -957,6 +961,10 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 .zoom(16)
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+        //mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+
     }
     @Override
     public void onProviderEnabled(String provider) {
