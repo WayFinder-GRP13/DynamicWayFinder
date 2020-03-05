@@ -20,6 +20,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -137,10 +138,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private ImageView weather_icon;
     private ImageButton btn_clear1, btn_clear2;
     long backKeyPressedTime;
-
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_activity);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -153,8 +155,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         TransportColour.put(2,BitmapDescriptorFactory.HUE_ORANGE);  //train
         TransportColour.put(3,BitmapDescriptorFactory.HUE_YELLOW); //cycle
 
-
-        floatingActionButton = findViewById(R.id.fab);
         exploreButton = findViewById(R.id.modesMap);
         destinationLocation = findViewById(R.id.search3);
         startingLocation = findViewById(R.id.search);
@@ -223,11 +223,22 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
+            //@RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void onClick(View view) {
 
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude()), 13));
+
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude()))      // Sets the center of the map to location user
+                        .zoom(17)                   // Sets the zoom
+                        // Sets the tilt of the camera to 30 degrees
+                        .build();                   // Creates a CameraPosition from the builder
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+
+
+                /**LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 Criteria criteria = new Criteria();
 
                 if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -253,7 +264,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                             .build();                   // Creates a CameraPosition from the builder
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-                }
+                }**/
             }
         });
 
@@ -666,6 +677,12 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng arg0) {
+                if(alertDialog != null) {
+                    alertDialog.dismiss();
+                    mMap.clear();
+                }else{
+                    System.out.println("nullXXXX");
+                }
                 // TODO Auto-generated method stub
                 LatLng CurrentLatLngClick = new LatLng(arg0.latitude, arg0.longitude);
                 addAddressMarker(CurrentLatLngClick);
@@ -1223,7 +1240,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         View dialogView = getLayoutInflater().inflate(R.layout.popup,null);
         AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
         builder.setView(dialogView);
-        builder.setCancelable(false);
 
         TextView address_popup = (TextView)dialogView.findViewById(R.id.popup_address);
         Button direction_popup = (Button)dialogView.findViewById(R.id.popup_direction);
@@ -1248,20 +1264,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 destinationLocation.setText(popup_address);
                 LatLng cur_loc = new LatLng(mMap.getMyLocation().getLatitude(),mMap.getMyLocation().getLongitude());
                 getRoute(cur_loc,position);
+                alertDialog.dismiss();
             }
         });
-        final AlertDialog alertDialog = builder.create();
-        alertDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-            @Override
-            public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent keyEvent) {
-                if(keyCode == keyEvent.KEYCODE_BACK){
-                    alertDialog.dismiss();
-                }
-                return false;
-            }
-        });
+        alertDialog = builder.create();
+
+
         alertDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        alertDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
 
         WindowManager.LayoutParams params = alertDialog.getWindow().getAttributes();
         params.y = 700;
