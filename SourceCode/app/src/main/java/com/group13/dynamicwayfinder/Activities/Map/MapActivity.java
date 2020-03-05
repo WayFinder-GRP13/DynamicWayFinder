@@ -693,15 +693,17 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             }
         });
         startGettingLocations();
+        mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
 
-                Popup_window(marker.getPosition());
-                return false;
-            }
-        });
+//        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+//            @Override
+//            public boolean onMarkerClick(Marker marker) {
+//
+//                Popup_window(marker.getPosition());
+//                return false;
+//            }
+//        });
 
     }
 
@@ -725,7 +727,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 //            CameraUpdate zoom=CameraUpdateFactory.zoomOut();
 
 
-                mMap.addMarker(new MarkerOptions().position(latLng).title("Marker").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                mMap.addMarker(new MarkerOptions().position(latLng).title(address.getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 //            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
 //            mMap.animateCamera(zoom);
 
@@ -809,7 +811,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
                 LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(latLng).title("Marker").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                mMap.addMarker(new MarkerOptions().position(latLng).title(address.getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
 
             } catch (IOException e) {
@@ -974,6 +976,10 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 .zoom(16)
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+        //mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+
     }
     @Override
     public void onProviderEnabled(String provider) {
