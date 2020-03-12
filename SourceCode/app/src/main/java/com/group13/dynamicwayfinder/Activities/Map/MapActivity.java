@@ -427,6 +427,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                             try {
                                 onMapSearch(destinationLocation);
+
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -547,8 +548,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     String imageUrl = "https://openweathermap.org/img/wn/" + getWeather() + "@2x.png";
 
                     Glide.with(getApplicationContext()).load(imageUrl).into(weatehr_icon);
-                    startingLocation.setText(null);
-                    destinationLocation.setText(null);
+                    //startingLocation.setText(null);
+                    //destinationLocation.setText(null);
 
                     backArrow.setOnClickListener(new View.OnClickListener() {
 
@@ -730,7 +731,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     //routeList2.add(loca);
                     //routeList2.add(latLng);
                     //zoomRoute(mMap,roufteList2);
-                    startingLocation.setText("Current Location");
                     getRoute(loca, latLng);
 
 
@@ -755,7 +755,10 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                         mMap.addMarker(new MarkerOptions().position(latLngStart).title(address.getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
 
 
+
                         //System.out.println(routeList);
+                        getRoute(latLngStart, latLng);
+
                         zoomRoute(mMap, routeList);
                     } catch (IOException e) {
                         e.printStackTrace();
