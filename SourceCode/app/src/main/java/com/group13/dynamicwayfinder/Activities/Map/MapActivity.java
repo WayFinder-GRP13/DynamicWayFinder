@@ -33,6 +33,7 @@ import android.widget.SearchView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -227,44 +228,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onClick(View view) {
 
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude()), 13));
-
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude()))      // Sets the center of the map to location user
-                        .zoom(17)                   // Sets the zoom
-                        // Sets the tilt of the camera to 30 degrees
-                        .build();                   // Creates a CameraPosition from the builder
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-
-
-                /**LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                Criteria criteria = new Criteria();
-
-                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    Activity#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for Activity#requestPermissions for more details.
-                    return;
-                }
-                Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
-
-                if (null != location) {
-                    // map is an instance of GoogleMap
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 13));
-
-                    CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(new LatLng(location.getLatitude(), location.getLongitude()))      // Sets the center of the map to location user
-                            .zoom(17)                   // Sets the zoom
-                            // Sets the tilt of the camera to 30 degrees
-                            .build();                   // Creates a CameraPosition from the builder
-                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-                }**/
+               zoomToCurrentLocation();
             }
         });
 
@@ -547,7 +511,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
         mTopSheetBehavior1 = TopSheetBehavior.from(topSheet);
-        mTopSheetBehavior1.setPeekHeight(150);
+        mTopSheetBehavior1.setPeekHeight(125);
         mTopSheetBehavior1.setState(TopSheetBehavior.STATE_COLLAPSED);
         mTopSheetBehavior1.setTopSheetCallback(new TopSheetBehavior.TopSheetCallback() {
             @Override
@@ -711,18 +675,25 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     public void onMapSearch(TextView view) throws Exception {
 
-        String location = view.getText().toString() + " Dublin";
+        String location = view.getText().toString();
         List<Address> addressList = null;
+        TextView destinationView = findViewById(R.id.search3);
 
-        if (location != null || !location.equals("")) {
+
+        if (!location.equals("")) {
             Geocoder geocoder = new Geocoder(this);
+            String locationDublin = view.getText().toString()+ "Dublin";
+
+
             try {
-                addressList = geocoder.getFromLocationName(location, 5);
+                addressList = geocoder.getFromLocationName(locationDublin, 5);
 
 
                 if (addressList == null) throw new Exception("No results for Geocoder");
 
                 Address address = addressList.get(0);
+
+                //latLng is the destination lat/long
                 LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 //            CameraUpdate zoom=CameraUpdateFactory.zoomOut();
 
@@ -741,7 +712,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 ////// Need to get current location method
 
 
-                if (startingLocation2.getText().toString().equals("")) {
+                if ((startingLocation2.getText().toString().equals(""))) {
 
 //              You can use both ways
 
@@ -763,7 +734,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     getRoute(loca, latLng);
 
 
-                } else {
+                } else{
 
 
                     String startingLoc = startingLocation2.getText().toString() + " Ireland";
@@ -781,6 +752,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                         routeList.add(latLngStart);
                         routeList.add(latLng);
 
+                        mMap.addMarker(new MarkerOptions().position(latLngStart).title(address.getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+
+
                         //System.out.println(routeList);
                         zoomRoute(mMap, routeList);
                     } catch (IOException e) {
@@ -792,17 +766,25 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        } else {
+            zoomToCurrentLocation();
+
+
         }
     }
     public void onMapSearchStarting(TextView view) {
 
-        String location = view.getText().toString()+" Ireland";
+        String location = view.getText().toString();
         List<Address> addressList = null;
 
-        if (location != null || !location.equals("Current Location")) {
+
+        if (!location.equals("")) {
             Geocoder geocoder = new Geocoder(this);
+
             try {
-                addressList = geocoder.getFromLocationName(location, 5);
+                String location2 = view.getText().toString()+" ireland";
+
+                addressList = geocoder.getFromLocationName(location2, 5);
 
                 if (addressList == null) throw new Exception ("No results for Geocoder");
 
@@ -822,7 +804,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         } else{
 
-            view.setText("Current Location");
+            zoomToCurrentLocation();
+
+
         }
     }
 
@@ -870,6 +854,21 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         LatLngBounds latLngBounds = boundsBuilder.build();
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding));
+    }
+
+    public void zoomToCurrentLocation(){
+
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude()), 13));
+
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude()))      // Sets the center of the map to location user
+                .zoom(17)                   // Sets the zoom
+                // Sets the tilt of the camera to 30 degrees
+                .build();                   // Creates a CameraPosition from the builder
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+
     }
 
     //controlling imageview turning on and off for seekbar for user preference
