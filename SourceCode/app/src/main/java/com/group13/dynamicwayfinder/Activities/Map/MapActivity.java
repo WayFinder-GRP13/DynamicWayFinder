@@ -1,28 +1,19 @@
 package com.group13.dynamicwayfinder.Activities.Map;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
@@ -37,7 +28,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatCallback;
@@ -49,11 +39,14 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Dash;
+import com.google.android.gms.maps.model.Dot;
+import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -134,6 +127,18 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     private Switch carSwitch, trainSwitch, busSwitch, walkSwitch, bicycleSwitch;
 
+    private boolean busChecked = false;
+    private boolean walkChecked = true;
+    private boolean bicycleChecked = false;
+    private boolean carChecked = false;
+    private boolean trainChecked = false;
+
+
+
+
+
+    private Switch s;
+
 
     private String popup_address;
     private ImageView weather_icon;
@@ -166,6 +171,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         trainSwitch = findViewById(R.id.trainSwitch);
         walkSwitch = findViewById(R.id.walkSwitch);
         bicycleSwitch = findViewById(R.id.bicycleSwitch);
+
+        carSwitch.setChecked(carChecked);
+        busSwitch.setChecked(busChecked);
+        trainSwitch.setChecked(trainChecked);
+        walkSwitch.setChecked(walkChecked);
+        bicycleSwitch.setChecked(bicycleChecked);
+
 
         carTime = findViewById(R.id.carTime);
         busTime = findViewById(R.id.busTime);
@@ -294,15 +306,20 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 // do something, the isChecked will be
                 // true if the switch is in the On position
 
+
+
                 if(isChecked){
 
-                    carTime.setText("20 Mins");
 
+                    carTime.setText("------");
+                    carChecked=true;
 
 
                 } else{
 
+
                     carTime.setText("------");
+                    carChecked=false;
                 }
             }
         });
@@ -311,15 +328,19 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 // do something, the isChecked will be
                 // true if the switch is in the On position
 
+
+
                 if(isChecked){
 
-                    trainTime.setText("7 Mins");
+                    trainTime.setText("------");
+                    trainChecked=true;
 
 
 
                 } else{
 
                     trainTime.setText("------");
+                    trainChecked=false;
                 }
             }
         });
@@ -328,15 +349,18 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 // do something, the isChecked will be
                 // true if the switch is in the On position
 
+
                 if(isChecked){
 
-                    busTime.setText("12 Mins");
+                    busTime.setText("------");
+                    busChecked=true;
 
 
 
                 } else{
 
                     busTime.setText("------");
+                    busChecked=false;
                 }
             }
         });
@@ -345,14 +369,17 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 // do something, the isChecked will be
                 // true if the switch is in the On position
 
+
                 if(isChecked){
 
-                    walkTime.setText("6 Mins");
+                    walkTime.setText("------");
+                    walkChecked=true;
 
 
                 } else{
 
                     walkTime.setText("------");
+                    walkChecked=false;
                 }
             }
         });
@@ -361,14 +388,17 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 // do something, the isChecked will be
                 // true if the switch is in the On position
 
+
                 if(isChecked){
 
 
-                    bicycleTime.setText("4 Mins");
+                    bicycleTime.setText("------");
+                    bicycleChecked=true;
 
                 } else{
 
                     bicycleTime.setText("------");
+                    bicycleChecked=false;
                 }
             }
         });
@@ -880,7 +910,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         Resources res = getResources();
 
 
-        if (isChecked == true) {
+        if (isChecked) {
 
             isChecked = false;
 
@@ -1186,61 +1216,440 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         return null;
     }
 
-    public void getRoute(LatLng start, LatLng end){
 
-        ArrayList<LatLng> point_list = new ArrayList<>();
-        PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.color(Color.BLUE);
-        polylineOptions.width(15);
+    //////Added indivisual if statement for tomtom api for singular switch mode of transport
 
-        String tomtom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
+    public void getRoute(final LatLng start, final LatLng end){
+
+
+        final String walktom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
                 +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=pedestrian&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
-        Log.d("route_api", tomtom);
+        final String bustom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
+                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=bus&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
-        String response = null;
-        HTTPGetRequest routeAPI = new HTTPGetRequest();
-        JsonParser parser = new JsonParser();
+        final String cartom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
+                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=car&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
-        try {
-            response = routeAPI.execute(tomtom).get();
-            Log.d("route_api", response);
-            if(response != null){
-                Log.d("route_api", tomtom);
-                Object object = parser.parse(response);
-                JsonObject jsonObject = (JsonObject) object;
-                JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
-                JsonObject object2 = (JsonObject) jsonArray.get(0);
-                JsonArray routeArray = (JsonArray) object2.get("legs");
-                JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
-                JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
+        final String bicycletom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
+                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=bicycle&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
-                int min,hour =0;
-                int sec;
-                sec = summary.get("travelTimeInSeconds").getAsInt();
+        final String traintom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
+                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=van&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
-                hour = sec / 3600;
-                min =  sec % 3600 / 60;
 
-                if(hour == 0){
-                    walkTime.setText(min + " Mins");
+        final String defaultMode = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
+                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=motorcycle&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
-                }else{
-                    walkTime.setText(hour + " H " + min + " M");
+
+
+
+        boolean walkSwitchChecker = onCheckedChanged(walkSwitch,walkChecked);
+        boolean busSwitchChecker = onCheckedChanged(busSwitch,busChecked);
+        boolean bicycleChecker = onCheckedChanged(bicycleSwitch,bicycleChecked);
+        boolean carChecker = onCheckedChanged(carSwitch,carChecked);
+        boolean trainChecker = onCheckedChanged(trainSwitch,trainChecked);
+
+
+
+        ////WALKING SWITCH ONLY
+        if(walkSwitchChecker && !busSwitchChecker && !bicycleChecker && !carChecker && !trainChecker){
+
+
+            ArrayList<LatLng> point_list = new ArrayList<>();
+            final int PATTERN_DASH_LENGTH_PX = 20;
+            final int PATTERN_GAP_LENGTH_PX = 20;
+            final PatternItem DOT = new Dot();
+            final PatternItem DASH = new Dash(PATTERN_DASH_LENGTH_PX);
+            final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
+            final List<PatternItem> PATTERN_POLYGON_ALPHA = Arrays.asList(GAP, DASH);
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.color(Color.BLUE);
+            polylineOptions.width(10);
+            polylineOptions.pattern(PATTERN_POLYGON_ALPHA);
+
+
+
+            Log.d("route_api", walktom);
+
+            String response = null;
+            HTTPGetRequest routeAPI = new HTTPGetRequest();
+            JsonParser parser = new JsonParser();
+
+
+            try {
+                response = routeAPI.execute(walktom).get();
+                Log.d("route_api", response);
+                if(response != null){
+                    Log.d("route_api", walktom);
+                    Object object = parser.parse(response);
+                    JsonObject jsonObject = (JsonObject) object;
+                    JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
+                    JsonObject object2 = (JsonObject) jsonArray.get(0);
+                    JsonArray routeArray = (JsonArray) object2.get("legs");
+                    JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
+                    JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
+
+                    int min,hour =0;
+                    int sec;
+                    sec = summary.get("travelTimeInSeconds").getAsInt();
+
+                    hour = sec / 3600;
+                    min =  sec % 3600 / 60;
+
+                    if(hour == 0){
+                        walkTime.setText(min + " Mins");
+
+                    }else{
+                        walkTime.setText(hour + " H " + min + " M");
+                    }
+                    for (int i=0; i<routePoint.size(); i++){
+                        JsonObject point = (JsonObject) routePoint.get(i);
+                        point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
+                    }
                 }
-                for (int i=0; i<routePoint.size(); i++){
-                    JsonObject point = (JsonObject) routePoint.get(i);
-                    point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
-                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            polylineOptions.addAll(point_list);
+            mMap.addPolyline(polylineOptions);
+            zoomRoute(mMap,point_list);
+
+
         }
-        polylineOptions.addAll(point_list);
-        mMap.addPolyline(polylineOptions);
-        zoomRoute(mMap,point_list);
+
+        //CAR SWITCH
+        else if(!walkSwitchChecker && !busSwitchChecker && !bicycleChecker && carChecker && !trainChecker){
+
+
+            ArrayList<LatLng> point_list = new ArrayList<>();
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.color(Color.MAGENTA);
+            polylineOptions.width(10);
+
+
+
+            Log.d("route_api", cartom);
+
+            String response = null;
+            HTTPGetRequest routeAPI = new HTTPGetRequest();
+            JsonParser parser = new JsonParser();
+
+
+            try {
+                response = routeAPI.execute(cartom).get();
+                Log.d("route_api", response);
+                if(response != null){
+                    Log.d("route_api", cartom);
+                    Object object = parser.parse(response);
+                    JsonObject jsonObject = (JsonObject) object;
+                    JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
+                    JsonObject object2 = (JsonObject) jsonArray.get(0);
+                    JsonArray routeArray = (JsonArray) object2.get("legs");
+                    JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
+                    JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
+
+                    int min,hour =0;
+                    int sec;
+                    sec = summary.get("travelTimeInSeconds").getAsInt();
+
+                    hour = sec / 3600;
+                    min =  sec % 3600 / 60;
+
+                    if(hour == 0){
+                        carTime.setText(min + " Mins");
+
+                    }else{
+                        carTime.setText(hour + " H " + min + " M");
+                    }
+                    for (int i=0; i<routePoint.size(); i++){
+                        JsonObject point = (JsonObject) routePoint.get(i);
+                        point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
+                    }
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            polylineOptions.addAll(point_list);
+            mMap.addPolyline(polylineOptions);
+            zoomRoute(mMap,point_list);
+
+
+        }
+
+
+        //BUS SWITCH ONLY
+        else if(!walkSwitchChecker && busSwitchChecker && !bicycleChecker && !carChecker && !trainChecker){
+
+
+            ArrayList<LatLng> point_list = new ArrayList<>();
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.color(Color.RED);
+            polylineOptions.width(15);
+
+
+            Log.d("route_api", bustom);
+
+            String response = null;
+            HTTPGetRequest routeAPI = new HTTPGetRequest();
+            JsonParser parser = new JsonParser();
+
+
+            try {
+                response = routeAPI.execute(bustom).get();
+                Log.d("route_api", response);
+                if(response != null){
+                    Log.d("route_api", bustom);
+                    Object object = parser.parse(response);
+                    JsonObject jsonObject = (JsonObject) object;
+                    JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
+                    JsonObject object2 = (JsonObject) jsonArray.get(0);
+                    JsonArray routeArray = (JsonArray) object2.get("legs");
+                    JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
+                    JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
+
+                    int min,hour =0;
+                    int sec;
+                    sec = summary.get("travelTimeInSeconds").getAsInt();
+
+                    hour = sec / 3600;
+                    min =  sec % 3600 / 60;
+
+                    if(hour == 0){
+                        busTime.setText(min + " Mins");
+
+                    }else{
+                        busTime.setText(hour + " H " + min + " M");
+                    }
+                    for (int i=0; i<routePoint.size(); i++){
+                        JsonObject point = (JsonObject) routePoint.get(i);
+                        point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
+                    }
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            polylineOptions.addAll(point_list);
+            mMap.addPolyline(polylineOptions);
+            zoomRoute(mMap,point_list);
+
+
+        }
+
+
+        //// BICYCLE SWITCH ONLY
+
+       else if(!walkSwitchChecker && !busSwitchChecker && bicycleChecker && !carChecker && !trainChecker){
+
+
+            ArrayList<LatLng> point_list = new ArrayList<>();
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.color(Color.YELLOW);
+            polylineOptions.width(15);
+
+
+            Log.d("route_api", bicycletom);
+
+            String response = null;
+            HTTPGetRequest routeAPI = new HTTPGetRequest();
+            JsonParser parser = new JsonParser();
+
+
+            try {
+                response = routeAPI.execute(bicycletom).get();
+                Log.d("route_api", response);
+                if(response != null){
+                    Log.d("route_api", walktom);
+                    Object object = parser.parse(response);
+                    JsonObject jsonObject = (JsonObject) object;
+                    JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
+                    JsonObject object2 = (JsonObject) jsonArray.get(0);
+                    JsonArray routeArray = (JsonArray) object2.get("legs");
+                    JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
+                    JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
+
+                    int min,hour =0;
+                    int sec;
+                    sec = summary.get("travelTimeInSeconds").getAsInt();
+
+                    hour = sec / 3600;
+                    min =  sec % 3600 / 60;
+
+                    if(hour == 0){
+                        bicycleTime.setText(min + " Mins");
+
+                    }else{
+                        bicycleTime.setText(hour + " H " + min + " M");
+                    }
+                    for (int i=0; i<routePoint.size(); i++){
+                        JsonObject point = (JsonObject) routePoint.get(i);
+                        point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
+                    }
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            polylineOptions.addAll(point_list);
+            mMap.addPolyline(polylineOptions);
+            zoomRoute(mMap,point_list);
+
+
+        }
+
+        // TRAIN SWITCH ONLY
+
+        else if(!walkSwitchChecker && !busSwitchChecker && !bicycleChecker && !carChecker && trainChecker){
+
+
+           // Toast.makeText(getApplicationContext(),"Hello Javatpoint",Toast.LENGTH_SHORT).show();
+
+            ArrayList<LatLng> point_list = new ArrayList<>();
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.color(Color.GREEN);
+            polylineOptions.width(15);
+
+
+            Log.d("route_api", traintom);
+
+            String response = null;
+            HTTPGetRequest routeAPI = new HTTPGetRequest();
+            JsonParser parser = new JsonParser();
+
+
+            try {
+                response = routeAPI.execute(traintom).get();
+                Log.d("route_api", response);
+                if(response != null){
+                    Log.d("route_api", walktom);
+                    Object object = parser.parse(response);
+                    JsonObject jsonObject = (JsonObject) object;
+                    JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
+                    JsonObject object2 = (JsonObject) jsonArray.get(0);
+                    JsonArray routeArray = (JsonArray) object2.get("legs");
+                    JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
+                    JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
+
+                    int min,hour =0;
+                    int sec;
+                    sec = summary.get("travelTimeInSeconds").getAsInt();
+
+                    hour = sec / 3600;
+                    min =  sec % 3600 / 60;
+
+                    if(hour == 0){
+                        trainTime.setText(min + " Mins");
+
+                    }else{
+                        trainTime.setText(hour + " H " + min + " M");
+                    }
+                    for (int i=0; i<routePoint.size(); i++){
+                        JsonObject point = (JsonObject) routePoint.get(i);
+                        point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
+                    }
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            polylineOptions.addAll(point_list);
+            mMap.addPolyline(polylineOptions);
+            zoomRoute(mMap,point_list);
+
+
+        } else {
+
+
+            ArrayList<LatLng> point_list = new ArrayList<>();
+            final int PATTERN_DASH_LENGTH_PX = 20;
+            final int PATTERN_GAP_LENGTH_PX = 20;
+            final PatternItem DOT = new Dot();
+            final PatternItem DASH = new Dash(PATTERN_DASH_LENGTH_PX);
+            final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
+            final List<PatternItem> PATTERN_POLYGON_ALPHA = Arrays.asList(GAP, DASH);
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.color(Color.BLACK);
+            polylineOptions.width(20);
+            polylineOptions.pattern(PATTERN_POLYGON_ALPHA);
+
+
+
+            Log.d("route_api", defaultMode);
+
+            String response = null;
+            HTTPGetRequest routeAPI = new HTTPGetRequest();
+            JsonParser parser = new JsonParser();
+
+
+            try {
+                response = routeAPI.execute(defaultMode).get();
+                Log.d("route_api", response);
+                if(response != null){
+                    Log.d("route_api", walktom);
+                    Object object = parser.parse(response);
+                    JsonObject jsonObject = (JsonObject) object;
+                    JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
+                    JsonObject object2 = (JsonObject) jsonArray.get(0);
+                    JsonArray routeArray = (JsonArray) object2.get("legs");
+                    JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
+                    JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
+
+                    int min,hour =0;
+                    int sec;
+                    sec = summary.get("travelTimeInSeconds").getAsInt();
+
+                    hour = sec / 3600;
+                    min =  sec % 3600 / 60;
+
+
+                    for (int i=0; i<routePoint.size(); i++){
+                        JsonObject point = (JsonObject) routePoint.get(i);
+                        point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
+                    }
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            polylineOptions.addAll(point_list);
+            mMap.addPolyline(polylineOptions);
+            zoomRoute(mMap,point_list);
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+    }
+
+    public boolean onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//        Toast.makeText(this, buttonView.toString() + (isChecked ? "on" : "off"),
+//                Toast.LENGTH_SHORT).show();
+        if(isChecked) {
+            return true;
+        } else {
+            //do stuff when Switch if OFF
+
+        }
+        return false;
     }
 
     public void Popup_window(final LatLng position){

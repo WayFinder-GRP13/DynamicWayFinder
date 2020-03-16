@@ -157,7 +157,7 @@
                         android:layout_width="70dp"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="4 Mins"
+                        android:text="------"
                         android:textColor="@color/grey" />
 
                     <TextView
@@ -168,7 +168,7 @@
 
                         android:gravity="center"
 
-                        android:text="6 Mins"
+                        android:text="------"
 
 
                         android:textColor="@color/grey" />
@@ -204,7 +204,7 @@
                         android:layout_width="70dp"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="3 Mins"
+                        android:text="------"
 
 
                         android:textColor="@color/grey" />
