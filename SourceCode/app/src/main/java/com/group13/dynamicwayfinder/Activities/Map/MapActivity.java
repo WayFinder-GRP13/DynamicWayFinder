@@ -1677,7 +1677,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onClick(View view) {
 
-                startingLocation.setText("Current Location");
+                startingLocation.setText("");
                 destinationLocation.setText(popup_address);
                 LatLng cur_loc = new LatLng(mMap.getMyLocation().getLatitude(),mMap.getMyLocation().getLongitude());
                 getRoute(cur_loc,position);
