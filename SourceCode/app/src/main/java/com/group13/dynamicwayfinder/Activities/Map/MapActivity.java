@@ -1514,6 +1514,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     hour = sec / 3600;
                     min =  sec % 3600 / 60;
 
+                    if(hour == 0){
+                        walkTime.setText(min + " Mins");
+
+                    }else{
+                        walkTime.setText(hour + " H " + min + " M");
+                    }
+
 
                     for (int i=0; i<routePoint.size(); i++){
                         JsonObject point = (JsonObject) routePoint.get(i);
