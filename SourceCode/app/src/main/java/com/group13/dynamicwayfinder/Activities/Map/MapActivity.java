@@ -120,17 +120,21 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private List<LatLng> routeList = new ArrayList<>();
 
     private TextView startingLocation, destinationLocation;
-    private TextView carTime, trainTime, busTime, walkTime, bicycleTime;
+    private TextView trainTime, busTime, walkTime, bicycleTime;
+    private TextView weather_status,weather_temperature;
 
+
+    //private TextView carTime;
 
     private boolean isChecked = true;
 
-    private Switch carSwitch, trainSwitch, busSwitch, walkSwitch, bicycleSwitch;
+    private Switch trainSwitch, busSwitch, walkSwitch, bicycleSwitch;
 
+    //private Switch carSwitch;
     private boolean busChecked = false;
     private boolean walkChecked = true;
     private boolean bicycleChecked = false;
-    private boolean carChecked = false;
+    //private boolean carChecked = false;
     private boolean trainChecked = false;
 
 
@@ -166,20 +170,21 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         startingLocation = findViewById(R.id.search);
         searchList = findViewById(R.id.searchListView);
 
-        carSwitch = findViewById(R.id.carSwitch);
+        //carSwitch = findViewById(R.id.carSwitch);
         busSwitch = findViewById(R.id.busSwitch);
         trainSwitch = findViewById(R.id.trainSwitch);
         walkSwitch = findViewById(R.id.walkSwitch);
         bicycleSwitch = findViewById(R.id.bicycleSwitch);
 
-        carSwitch.setChecked(carChecked);
+       // carSwitch.setChecked(carChecked);
         busSwitch.setChecked(busChecked);
         trainSwitch.setChecked(trainChecked);
         walkSwitch.setChecked(walkChecked);
         bicycleSwitch.setChecked(bicycleChecked);
 
 
-        carTime = findViewById(R.id.carTime);
+
+       // carTime = findViewById(R.id.carTime);
         busTime = findViewById(R.id.busTime);
         trainTime = findViewById(R.id.trainTime);
         walkTime = findViewById(R.id.walkTime);
@@ -197,6 +202,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         backArrow = findViewById(R.id.arrow_back);
 
         weather_icon = findViewById(R.id.weather_icon);
+        weather_status = findViewById(R.id.weatherString);
+        weather_temperature = findViewById(R.id.weatherString2);
         btn_clear1 = findViewById(R.id.clear_button1);
         btn_clear1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -300,29 +307,29 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         });
 
-
-        carSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // do something, the isChecked will be
-                // true if the switch is in the On position
-
-
-
-                if(isChecked){
-
-
-                    carTime.setText("------");
-                    carChecked=true;
-
-
-                } else{
-
-
-                    carTime.setText("------");
-                    carChecked=false;
-                }
-            }
-        });
+//
+//        carSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                // do something, the isChecked will be
+//                // true if the switch is in the On position
+//
+//
+//
+//                if(isChecked){
+//
+//
+//                    carTime.setText("------");
+//                    carChecked=true;
+//
+//
+//                } else{
+//
+//
+//                    carTime.setText("------");
+//                    carChecked=false;
+//                }
+//            }
+//        });
         trainSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 // do something, the isChecked will be
@@ -374,12 +381,14 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                     walkTime.setText("------");
                     walkChecked=true;
+                    walkSwitch.setChecked(true);
 
 
                 } else{
 
                     walkTime.setText("------");
-                    walkChecked=false;
+                    walkSwitch.setChecked(true);
+
                 }
             }
         });
@@ -1197,13 +1206,35 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             response = weather_API.execute("https://group13aseserver.herokuapp.com/byCity/IE/dublin").get();
             Object object = parser.parse(response);
             JsonObject jsonObject = (JsonObject)object;
+            JsonObject jsonObject2 = (JsonObject)object;
+
             JsonArray all_weather = (JsonArray) jsonObject.get("weather");
 
+            //get temperature from api
+            JsonObject all_weather2 = (JsonObject) jsonObject2.get("main");
+
+
             JsonObject weather = (JsonObject) all_weather.get(0);
+            JsonObject weatherTemp = (JsonObject) all_weather2;
             String icon = weather.get("icon").toString();
+
+            //Get String status and temperature
+            String weather_str = weather.get("main").toString();
+            Double weather_temp = weatherTemp.get("temp").getAsDouble();
+
+            weather_temp = weather_temp- 273.15;
+
+            weather_temp = Math.ceil(weather_temp) ;
 
             String unique_char =  "[^\uAC00-\uD7A3xfe0-9a-zA-Z\\s]";
             icon  =icon.replaceAll(unique_char, "");
+
+            //remove the "" in the api string
+            String weather_str_final=weather_str.substring(1,weather_str.length()-1);
+            weather_status.setText(weather_str_final);
+            weather_temperature.setText(weather_temp.toString() + "°C");
+
+
             Log.d("weathericon", icon.toString());
 
             return icon;
@@ -1228,8 +1259,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         final String bustom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
                 +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=bus&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
-        final String cartom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
-                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=car&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
+//        final String cartom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
+//                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=car&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
         final String bicycletom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
                 +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=bicycle&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
@@ -1238,152 +1269,24 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=van&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
 
-        final String defaultMode = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
-                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=motorcycle&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
 
 
+        /// walking switch is always on therefore doesn't need to be added around should always be on.
 
-        boolean walkSwitchChecker = onCheckedChanged(walkSwitch,walkChecked);
+        //boolean walkSwitchChecker = onCheckedChanged(walkSwitch,walkChecked);
         boolean busSwitchChecker = onCheckedChanged(busSwitch,busChecked);
         boolean bicycleChecker = onCheckedChanged(bicycleSwitch,bicycleChecked);
-        boolean carChecker = onCheckedChanged(carSwitch,carChecked);
+        //boolean carChecker = onCheckedChanged(carSwitch,carChecked);
         boolean trainChecker = onCheckedChanged(trainSwitch,trainChecked);
 
 
 
-        ////WALKING SWITCH ONLY
-        if(walkSwitchChecker && !busSwitchChecker && !bicycleChecker && !carChecker && !trainChecker){
 
-
-            ArrayList<LatLng> point_list = new ArrayList<>();
-            final int PATTERN_DASH_LENGTH_PX = 20;
-            final int PATTERN_GAP_LENGTH_PX = 20;
-            final PatternItem DOT = new Dot();
-            final PatternItem DASH = new Dash(PATTERN_DASH_LENGTH_PX);
-            final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
-            final List<PatternItem> PATTERN_POLYGON_ALPHA = Arrays.asList(GAP, DASH);
-            PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.color(Color.BLUE);
-            polylineOptions.width(10);
-            polylineOptions.pattern(PATTERN_POLYGON_ALPHA);
-
-
-
-            Log.d("route_api", walktom);
-
-            String response = null;
-            HTTPGetRequest routeAPI = new HTTPGetRequest();
-            JsonParser parser = new JsonParser();
-
-
-            try {
-                response = routeAPI.execute(walktom).get();
-                Log.d("route_api", response);
-                if(response != null){
-                    Log.d("route_api", walktom);
-                    Object object = parser.parse(response);
-                    JsonObject jsonObject = (JsonObject) object;
-                    JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
-                    JsonObject object2 = (JsonObject) jsonArray.get(0);
-                    JsonArray routeArray = (JsonArray) object2.get("legs");
-                    JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
-                    JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
-
-                    int min,hour =0;
-                    int sec;
-                    sec = summary.get("travelTimeInSeconds").getAsInt();
-
-                    hour = sec / 3600;
-                    min =  sec % 3600 / 60;
-
-                    if(hour == 0){
-                        walkTime.setText(min + " Mins");
-
-                    }else{
-                        walkTime.setText(hour + " H " + min + " M");
-                    }
-                    for (int i=0; i<routePoint.size(); i++){
-                        JsonObject point = (JsonObject) routePoint.get(i);
-                        point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
-                    }
-                }
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            polylineOptions.addAll(point_list);
-            mMap.addPolyline(polylineOptions);
-            zoomRoute(mMap,point_list);
-
-
-        }
-
-        //CAR SWITCH
-        else if(!walkSwitchChecker && !busSwitchChecker && !bicycleChecker && carChecker && !trainChecker){
-
-
-            ArrayList<LatLng> point_list = new ArrayList<>();
-            PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.color(Color.MAGENTA);
-            polylineOptions.width(10);
-
-
-
-            Log.d("route_api", cartom);
-
-            String response = null;
-            HTTPGetRequest routeAPI = new HTTPGetRequest();
-            JsonParser parser = new JsonParser();
-
-
-            try {
-                response = routeAPI.execute(cartom).get();
-                Log.d("route_api", response);
-                if(response != null){
-                    Log.d("route_api", cartom);
-                    Object object = parser.parse(response);
-                    JsonObject jsonObject = (JsonObject) object;
-                    JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
-                    JsonObject object2 = (JsonObject) jsonArray.get(0);
-                    JsonArray routeArray = (JsonArray) object2.get("legs");
-                    JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
-                    JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
-
-                    int min,hour =0;
-                    int sec;
-                    sec = summary.get("travelTimeInSeconds").getAsInt();
-
-                    hour = sec / 3600;
-                    min =  sec % 3600 / 60;
-
-                    if(hour == 0){
-                        carTime.setText(min + " Mins");
-
-                    }else{
-                        carTime.setText(hour + " H " + min + " M");
-                    }
-                    for (int i=0; i<routePoint.size(); i++){
-                        JsonObject point = (JsonObject) routePoint.get(i);
-                        point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
-                    }
-                }
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            polylineOptions.addAll(point_list);
-            mMap.addPolyline(polylineOptions);
-            zoomRoute(mMap,point_list);
-
-
-        }
 
 
         //BUS SWITCH ONLY
-        else if(!walkSwitchChecker && busSwitchChecker && !bicycleChecker && !carChecker && !trainChecker){
+        if(busSwitchChecker && !bicycleChecker  && !trainChecker){
 
 
             ArrayList<LatLng> point_list = new ArrayList<>();
@@ -1445,7 +1348,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         //// BICYCLE SWITCH ONLY
 
-       else if(!walkSwitchChecker && !busSwitchChecker && bicycleChecker && !carChecker && !trainChecker){
+       else if(!busSwitchChecker && bicycleChecker && !trainChecker){
 
 
             ArrayList<LatLng> point_list = new ArrayList<>();
@@ -1506,7 +1409,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         // TRAIN SWITCH ONLY
 
-        else if(!walkSwitchChecker && !busSwitchChecker && !bicycleChecker && !carChecker && trainChecker){
+        else if(!busSwitchChecker && !bicycleChecker && trainChecker){
 
 
            // Toast.makeText(getApplicationContext(),"Hello Javatpoint",Toast.LENGTH_SHORT).show();
@@ -1565,7 +1468,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             zoomRoute(mMap,point_list);
 
 
-        } else {
+        }
+        ////////Default for now will be walking
+        else {
 
 
             ArrayList<LatLng> point_list = new ArrayList<>();
@@ -1576,13 +1481,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
             final List<PatternItem> PATTERN_POLYGON_ALPHA = Arrays.asList(GAP, DASH);
             PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.color(Color.BLACK);
-            polylineOptions.width(20);
+            polylineOptions.color(Color.BLUE);
+            polylineOptions.width(10);
             polylineOptions.pattern(PATTERN_POLYGON_ALPHA);
 
 
 
-            Log.d("route_api", defaultMode);
+            Log.d("route_api", walktom);
 
             String response = null;
             HTTPGetRequest routeAPI = new HTTPGetRequest();
@@ -1590,7 +1495,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
             try {
-                response = routeAPI.execute(defaultMode).get();
+                response = routeAPI.execute(walktom).get();
                 Log.d("route_api", response);
                 if(response != null){
                     Log.d("route_api", walktom);

@@ -64,11 +64,33 @@
                 android:layout_marginLeft="32dp"
                 android:src="@drawable/destination_image"/>
 
+            <TextView
+                android:id="@+id/weatherString"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Weather"
+                android:textSize="12dp"
+                android:layout_marginTop="105dp"
+                android:paddingLeft="10dp"
+                />
+            <TextView
+                android:id="@+id/weatherString2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Weather"
+                android:textColor="@color/mapbox_blue"
+                android:textSize="8dp"
+                android:layout_marginTop="125dp"
+                android:paddingLeft="18dp"
+                />
+
+
+
             <ImageView
                 android:id="@+id/weather_icon"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:padding="0dp"
+                android:paddingLeft="10dp"
                 android:layout_marginTop="130dp"/>
 
 
@@ -77,7 +99,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:paddingLeft="50dp">
+                android:paddingLeft="60dp">
 
 
                 <LinearLayout
@@ -149,16 +171,18 @@
                     android:layout_width="340dp"
                     android:layout_height="50dp"
                     android:orientation="horizontal"
-                    android:paddingTop="20dp">
+                    android:paddingTop="20dp"
+                    android:paddingLeft="20dp">
 
 
-                    <TextView
-                        android:id="@+id/carTime"
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="------"
-                        android:textColor="@color/grey" />
+
+<!--                    <TextView-->
+<!--                        android:id="@+id/carTime"-->
+<!--                        android:layout_width="70dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:gravity="center"-->
+<!--                        android:text="&#45;&#45;&#45;&#45;&#45;&#45;"-->
+<!--                        android:textColor="@color/grey" />-->
 
                     <TextView
 
@@ -217,14 +241,15 @@
                     android:layout_width="340dp"
                     android:layout_height="50dp"
                     android:dividerPadding="50dp"
+                    android:paddingLeft="20dp"
                     android:orientation="horizontal">
 
 
-                    <ImageView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:saveEnabled="true"
-                        android:src="@drawable/iconfinder_ic_directions_car_48px_352315" />
+<!--                    <ImageView-->
+<!--                        android:layout_width="70dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:saveEnabled="true"-->
+<!--                        android:src="@drawable/iconfinder_ic_directions_car_48px_352315" />-->
 
                     <ImageView
                         android:layout_width="70dp"

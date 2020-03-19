@@ -61,45 +61,45 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <LinearLayout
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
+<!--                    <LinearLayout-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:orientation="vertical"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content">-->
 
-                        <RelativeLayout
-                            android:layout_margin="10dp"
-                            android:gravity="center"
-                            android:layout_gravity="center"
-                            android:padding="10dp"
-                            android:background="@drawable/circleshape"
-                            android:layout_width="60dp"
-                            android:layout_height="60dp">
+<!--                        <RelativeLayout-->
+<!--                            android:layout_margin="10dp"-->
+<!--                            android:gravity="center"-->
+<!--                            android:layout_gravity="center"-->
+<!--                            android:padding="10dp"-->
+<!--                            android:background="@drawable/circleshape"-->
+<!--                            android:layout_width="60dp"-->
+<!--                            android:layout_height="60dp">-->
 
-                            <ImageView
-                                android:src="@drawable/iconfinder_ic_directions_car_48px_352315"
-                                android:layout_width="35dp"
-                                android:layout_height="35dp" />
+<!--                            <ImageView-->
+<!--                                android:src="@drawable/iconfinder_ic_directions_car_48px_352315"-->
+<!--                                android:layout_width="35dp"-->
+<!--                                android:layout_height="35dp" />-->
 
 
-                        </RelativeLayout>
+<!--                        </RelativeLayout>-->
 
-                        <TextView
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/grey"
-                            android:text="Car"/>
+<!--                        <TextView-->
+<!--                            android:layout_gravity="center"-->
+<!--                            android:gravity="center"-->
+<!--                            android:layout_width="wrap_content"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:textColor="@color/grey"-->
+<!--                            android:text="Car"/>-->
 
-                        <Switch
-                            android:id="@+id/carSwitch"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:checked="false" />
+<!--                        <Switch-->
+<!--                            android:id="@+id/carSwitch"-->
+<!--                            android:layout_width="wrap_content"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_gravity="center"-->
+<!--                            android:checked="false" />-->
 
-                    </LinearLayout>
+<!--                    </LinearLayout>-->
 
 
                     <LinearLayout
