@@ -25,7 +25,8 @@ public class ServerHTTPRequestBuilder  extends HTTPRequestBuilder {
 
         StringBuilder serverHTTPRequest = new StringBuilder();
 
-        serverHTTPRequest.append("https://group13aseserver.herokuapp.com/");
+        //serverHTTPRequest.append("https://group13aseserver.herokuapp.com/");
+        serverHTTPRequest.append("http://192.168.43.77:9009?");
 
 
         return serverHTTPRequest.toString();

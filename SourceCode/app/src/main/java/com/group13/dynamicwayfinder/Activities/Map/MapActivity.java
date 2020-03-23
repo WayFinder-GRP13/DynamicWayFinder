@@ -1,6 +1,9 @@
 package com.group13.dynamicwayfinder.Activities.Map;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -31,6 +34,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatCallback;
+
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -80,7 +84,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 
-public class MapActivity extends AppCompatActivity implements AppCompatCallback, LocationListener, OnMapReadyCallback  {
+public class MapActivity extends AppCompatActivity implements AppCompatCallback, LocationListener, OnMapReadyCallback {
     private GoogleMap mMap;
     private android.location.LocationManager lm;
     private Marker markerLocation;
@@ -92,7 +96,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private ImageView backArrow;
     private ListView listView;
 
-    private HashMap<Integer,Float> TransportColour;
+    private HashMap<Integer, Integer> TransportColour;
 
     private Address location;
     private Location loc;
@@ -121,7 +125,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     private TextView startingLocation, destinationLocation;
     private TextView trainTime, busTime, walkTime, bicycleTime;
-    private TextView weather_status,weather_temperature;
+    private TextView weather_status, weather_temperature;
 
 
     //private TextView carTime;
@@ -138,9 +142,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private boolean trainChecked = false;
 
 
-
-
-
     private Switch s;
 
 
@@ -149,6 +150,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private ImageButton btn_clear1, btn_clear2;
     long backKeyPressedTime;
     private AlertDialog alertDialog;
+    private LatLng serverRequestStartPos;
+    private LatLng serverRequestEndPos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,11 +162,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 .findFragmentById(R.id.map);
 
 
-
         TransportColour = new HashMap<>();
-        TransportColour.put(1,BitmapDescriptorFactory.HUE_VIOLET); //bus
-        TransportColour.put(2,BitmapDescriptorFactory.HUE_ORANGE);  //train
-        TransportColour.put(3,BitmapDescriptorFactory.HUE_YELLOW); //cycle
+        TransportColour.put(0, Color.GREEN); //walk
+        TransportColour.put(1, Color.BLUE); //bus
+        TransportColour.put(2, Color.YELLOW);  //train
+        TransportColour.put(3, Color.CYAN); //cycle
 
         exploreButton = findViewById(R.id.modesMap);
         destinationLocation = findViewById(R.id.search3);
@@ -176,15 +179,14 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         walkSwitch = findViewById(R.id.walkSwitch);
         bicycleSwitch = findViewById(R.id.bicycleSwitch);
 
-       // carSwitch.setChecked(carChecked);
+        // carSwitch.setChecked(carChecked);
         busSwitch.setChecked(busChecked);
         trainSwitch.setChecked(trainChecked);
         walkSwitch.setChecked(walkChecked);
         bicycleSwitch.setChecked(bicycleChecked);
 
 
-
-       // carTime = findViewById(R.id.carTime);
+        // carTime = findViewById(R.id.carTime);
         busTime = findViewById(R.id.busTime);
         trainTime = findViewById(R.id.trainTime);
         walkTime = findViewById(R.id.walkTime);
@@ -219,10 +221,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             }
         });
 
-        floatingActionButton =  findViewById(R.id.fab);
-        tapactionlayout =  findViewById(R.id.tap_action_layout);
+        floatingActionButton = findViewById(R.id.fab);
+        tapactionlayout = findViewById(R.id.tap_action_layout);
         toplayout = findViewById(R.id.top_tap_action);
-
 
 
         topSheet = findViewById(R.id.searchbardisplay);
@@ -232,11 +233,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 // program the topSheet for starting point and destination
 
-        seekBarSpeed.setMax( (max - min) / step );
-        seekBarEnv.setMax( (max - min) / step );
-        seekBarCost.setMax( (max - min) / step );
-
-
+        seekBarSpeed.setMax((max - min) / step);
+        seekBarEnv.setMax((max - min) / step);
+        seekBarCost.setMax((max - min) / step);
 
 
         // starting location once they press enter a tag will show that location
@@ -247,7 +246,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onClick(View view) {
 
-               zoomToCurrentLocation();
+                zoomToCurrentLocation();
             }
         });
 
@@ -261,7 +260,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         mBottomSheetBehavior2.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
 
-
         exploreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -271,7 +269,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 bottomSheet.setVisibility(LinearLayout.INVISIBLE);
                 mBottomSheetBehavior2.setState(BottomSheetBehavior.STATE_EXPANDED);
 
-                mBottomSheetBehavior2.addBottomSheetCallback (new BottomSheetBehavior.BottomSheetCallback() {
+                mBottomSheetBehavior2.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
                     @Override
                     public void onStateChanged(@NonNull View bottomSheet1, int newState) {
                         if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
@@ -280,7 +278,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                             mBottomSheetBehavior2.setPeekHeight(0);
                             tapactionlayout.setVisibility(LinearLayout.VISIBLE);
                             bottomSheet.setVisibility(LinearLayout.VISIBLE);
-
 
 
                         }
@@ -300,7 +297,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                     }
                 });
-
 
 
             }
@@ -336,18 +332,16 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 // true if the switch is in the On position
 
 
-
-                if(isChecked){
-
-                    trainTime.setText("------");
-                    trainChecked=true;
-
-
-
-                } else{
+                if (isChecked) {
 
                     trainTime.setText("------");
-                    trainChecked=false;
+                    trainChecked = true;
+
+
+                } else {
+
+                    trainTime.setText("------");
+                    trainChecked = false;
                 }
             }
         });
@@ -357,17 +351,16 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 // true if the switch is in the On position
 
 
-                if(isChecked){
+                if (isChecked) {
 
                     busTime.setText("------");
-                    busChecked=true;
+                    busChecked = true;
 
 
-
-                } else{
+                } else {
 
                     busTime.setText("------");
-                    busChecked=false;
+                    busChecked = false;
                 }
             }
         });
@@ -377,14 +370,14 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 // true if the switch is in the On position
 
 
-                if(isChecked){
+                if (isChecked) {
 
                     walkTime.setText("------");
-                    walkChecked=true;
+                    walkChecked = true;
                     walkSwitch.setChecked(true);
 
 
-                } else{
+                } else {
 
                     walkTime.setText("------");
                     walkSwitch.setChecked(true);
@@ -398,20 +391,19 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 // true if the switch is in the On position
 
 
-                if(isChecked){
+                if (isChecked) {
 
 
                     bicycleTime.setText("------");
-                    bicycleChecked=true;
+                    bicycleChecked = true;
 
-                } else{
+                } else {
 
                     bicycleTime.setText("------");
-                    bicycleChecked=false;
+                    bicycleChecked = false;
                 }
             }
         });
-
 
 
         startingLocation.setOnClickListener(new View.OnClickListener() {
@@ -421,14 +413,10 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             }
         });
 
-        startingLocation.setOnKeyListener(new View.OnKeyListener()
-        {
-            public boolean onKey(View v, int keyCode, KeyEvent event)
-            {
-                if (event.getAction() == KeyEvent.ACTION_DOWN)
-                {
-                    switch (keyCode)
-                    {
+        startingLocation.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (keyCode) {
                         case KeyEvent.KEYCODE_DPAD_CENTER:
                         case KeyEvent.KEYCODE_ENTER:
 
@@ -447,14 +435,10 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         //once the user clicks enter on the destination textView a map tag will be created
 
-        destinationLocation.setOnKeyListener(new View.OnKeyListener()
-        {
-            public boolean onKey(View v, int keyCode, KeyEvent event)
-            {
-                if (event.getAction() == KeyEvent.ACTION_DOWN)
-                {
-                    switch (keyCode)
-                    {
+        destinationLocation.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (keyCode) {
                         case KeyEvent.KEYCODE_DPAD_CENTER:
                         case KeyEvent.KEYCODE_ENTER:
 
@@ -498,8 +482,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             public void onStopTrackingTouch(SeekBar seekBar) {
 
 
-
-
             }
         });
 
@@ -518,7 +500,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
 
 
             }
@@ -543,11 +524,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             public void onStopTrackingTouch(SeekBar seekBar) {
 
 
-
-
             }
         });
-
 
 
         mTopSheetBehavior1 = TopSheetBehavior.from(topSheet);
@@ -579,8 +557,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         toplayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mTopSheetBehavior1.getState()==TopSheetBehavior.STATE_COLLAPSED)
-                {
+                if (mTopSheetBehavior1.getState() == TopSheetBehavior.STATE_COLLAPSED) {
                     mTopSheetBehavior1.setState(TopSheetBehavior.STATE_EXPANDED);
                     ImageView weatehr_icon = findViewById(R.id.weather_icon);
 
@@ -602,8 +579,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                             destinationLocation.setText(null);
 
 
-
-
                         }
 
                     });
@@ -616,7 +591,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         mBottomSheetBehavior1 = BottomSheetBehavior.from(bottomSheet);
         mBottomSheetBehavior1.setPeekHeight(120);
         mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        mBottomSheetBehavior1.addBottomSheetCallback (new BottomSheetBehavior.BottomSheetCallback() {
+        mBottomSheetBehavior1.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
@@ -641,14 +616,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         tapactionlayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mBottomSheetBehavior1.getState()==BottomSheetBehavior.STATE_COLLAPSED)
-                {
+                if (mBottomSheetBehavior1.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
                     mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_EXPANDED);
                 }
             }
         });
-
-
 
 
         mapFragment.getMapAsync(this);
@@ -657,22 +629,24 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         serverFetcher = new ServerFetcher(this);
 
 
-
-
-
     }
 
     // this method calls the server
-    private void callServer() {
-        BusSettings busSettings = new BusSettings(true,1);
-        RailSettings railSettings = new RailSettings(true,1);
-        CarSettings carSettings = new CarSettings(true,1);
-        CycleSettings cycleSettings = new CycleSettings(true,1);
-        WalkSettings walkSettings = new WalkSettings(true,1);
-        ScaleSettings scaleSettings = new ScaleSettings(5,5,5);
-        UserSettings userSettings = new UserSettings(1,busSettings,railSettings,carSettings,walkSettings,cycleSettings,scaleSettings);
-        serverFetcher.sendServerRequest(new RestAPIRequestInformation(1,"mike","55.5","55.5","55.5","55.5",userSettings));
+    private void callServer () {
+        System.out.println("here");
+        if (serverRequestStartPos != null && serverRequestEndPos != null) {
+            System.out.println("inside if statement");
+            BusSettings busSettings = new BusSettings(true, 1);
+            RailSettings railSettings = new RailSettings(true, 1);
+            CarSettings carSettings = new CarSettings(true, 1);
+            CycleSettings cycleSettings = new CycleSettings(true, 1);
+            WalkSettings walkSettings = new WalkSettings(true, 1);
+            ScaleSettings scaleSettings = new ScaleSettings(5, 5, 5);
+            UserSettings userSettings = new UserSettings(1, busSettings, railSettings, carSettings, walkSettings, cycleSettings, scaleSettings);
+            serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings));
+        }
     }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -681,10 +655,10 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng arg0) {
-                if(alertDialog != null) {
+                if (alertDialog != null) {
                     alertDialog.dismiss();
                     mMap.clear();
-                }else{
+                } else {
                     System.out.println("nullXXXX");
                 }
                 // TODO Auto-generated method stub
@@ -712,7 +686,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     }
 
 
-
     public void onMapSearch(TextView view) throws Exception {
 
         String location = view.getText().toString();
@@ -722,7 +695,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         if (!location.equals("")) {
             Geocoder geocoder = new Geocoder(this);
-            String locationDublin = view.getText().toString()+ "Dublin";
+            String locationDublin = view.getText().toString() + "Dublin";
 
 
             try {
@@ -770,10 +743,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     //routeList2.add(loca);
                     //routeList2.add(latLng);
                     //zoomRoute(mMap,roufteList2);
+                    serverRequestStartPos = loca;
+                    serverRequestEndPos = latLng;
+                    callServer();
                     getRoute(loca, latLng);
 
 
-                } else{
+                } else {
 
 
                     String startingLoc = startingLocation2.getText().toString() + " Ireland";
@@ -794,9 +770,12 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                         mMap.addMarker(new MarkerOptions().position(latLngStart).title(address.getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
 
 
-
                         //System.out.println(routeList);
                         getRoute(latLngStart, latLng);
+
+                        serverRequestStartPos = latLngStart;
+                        serverRequestEndPos = latLng;
+                        callServer();
 
                         zoomRoute(mMap, routeList);
                     } catch (IOException e) {
@@ -814,6 +793,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         }
     }
+
     public void onMapSearchStarting(TextView view) {
 
         String location = view.getText().toString();
@@ -824,14 +804,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             Geocoder geocoder = new Geocoder(this);
 
             try {
-                String location2 = view.getText().toString()+" ireland";
+                String location2 = view.getText().toString() + " ireland";
 
                 addressList = geocoder.getFromLocationName(location2, 5);
 
-                if (addressList == null) throw new Exception ("No results for Geocoder");
+                if (addressList == null) throw new Exception("No results for Geocoder");
 
                 Address address = addressList.get(0);
-
 
 
                 LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
@@ -844,7 +823,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 e.printStackTrace();
             }
 
-        } else{
+        } else {
 
             zoomToCurrentLocation();
 
@@ -879,7 +858,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                         MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
 
             }
-        }catch(SecurityException e){
+        } catch (SecurityException e) {
 
         }
     }
@@ -898,7 +877,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding));
     }
 
-    public void zoomToCurrentLocation(){
+    public void zoomToCurrentLocation() {
 
 
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude()), 13));
@@ -929,21 +908,21 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 case R.id.costImage:
                     seekBarCost.setEnabled(isChecked);
                     linearCost.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border)));
-                    valueCost=1;
+                    valueCost = 1;
                     System.out.println(valueCost);
                     break;
 
                 case R.id.enviormentImage:
                     seekBarEnv.setEnabled(isChecked);
                     linearEnv.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border)));
-                    valueEnv=1;
+                    valueEnv = 1;
 
 
                     break;
                 case R.id.timeImage:
                     seekBarSpeed.setEnabled(isChecked);
                     linearTime.setBackground(Drawable.createFromXml(res, res.getXml(R.xml.border)));
-                    valueSpeed=1;
+                    valueSpeed = 1;
 
                     break;
 
@@ -983,17 +962,18 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         }
 
     }
+
     @Override
     public void onLocationChanged(Location location) {
 
         currentLong = location.getLongitude();
         currentLat = location.getLatitude();
 
-        if(firstTime) {
+        if (firstTime) {
             LatLng latlng = new LatLng(location.getLatitude(), location.getLongitude());
             addMarker(latlng);
         }
-        firstTime=false;
+        firstTime = false;
     }
 
     @Override
@@ -1001,6 +981,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     }
 
+    @SuppressLint("MissingPermission")
     private void addMarker(LatLng latLng) {
         if (latLng == null) {
             return;
@@ -1104,25 +1085,26 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
+
     // this method draws the route on the map
     public void updateRouteOnMap(String response) {
         System.out.println("Response is: " + response);
         ArrayList<FinalRoute> finalRouteList = new ArrayList();
-
         JSONArray scores = null;
         try {
             scores = new JSONArray(response);
-
             for (int i = 0; i < scores.length(); i++) {
                 JSONObject element = scores.getJSONObject(i);
-                System.out.println(element);
+                System.out.println("Element: "+element);
                 String PolyLine = element.getString("overviewPolyline");
                 JSONObject destination = element.getJSONObject("destination");
+                System.out.println("Destination: "+destination.toString());
                 Node destNode = new Node(destination.getString("name"), destination.getInt("stopId"), destination.getInt("transportType"), destination.getDouble("latitude"), destination.getDouble("longitudue"), destination.getDouble("score"));
+                System.out.println(destNode.getStopId());
                 JSONObject origin = element.getJSONObject("origin");
                 Node originNode = new Node(origin.getString("name"), origin.getInt("stopId"), origin.getInt("transportType"), origin.getDouble("latitude"), origin.getDouble("longitudue"), origin.getDouble("score"));
-                finalRouteList.add(new FinalRoute(destNode, originNode, PolyLine));
-
+                int routeType = element.getInt("routeType");
+                finalRouteList.add(new FinalRoute(destNode, originNode, PolyLine,routeType));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1130,50 +1112,42 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         }
         boolean firstTime=true;
         for (FinalRoute route : finalRouteList) {
-            if(firstTime==true) {
-                addTransportMarker(route.getOrigin());
-                firstTime=false;
-            }
+            //if(firstTime==true) {
+            addTransportMarker(route.getOrigin());
+            // firstTime=false;
+            //}
             addTransportMarker(route.getDestination());
-            decodePolyline(route.getOverviewPolyline());
-
+            decodePolyline(route.getOverviewPolyline(),route.getRouteType());
             System.out.println(route.getOverviewPolyline());
-            System.out.println(route.getOrigin().getName());
-            System.out.println(route.getDestination().getName());
+            System.out.println(route.getOrigin().getStopId());
+            System.out.println(route.getDestination().getStopId());
         }
     }
 
-    public void addTransportMarker(Node point){
 
+    public void addTransportMarker(Node point){
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(new LatLng(point.getLatitude(),point.getLongitudue()));
-        markerOptions.title(point.getName()+"\n"+
+        markerOptions.title(point.getStopId()+"\n"+
                 "Stop ID: "+point.getStopId());
-
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(TransportColour.get(point.getTransportType())));
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         if (mMap != null)
             mMap.addMarker(markerOptions);
-
-
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(new LatLng(point.getLatitude(), point.getLongitudue()))
                 .zoom(16)
                 .build();
-
         if (mMap != null)
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
-
-    public void decodePolyline(String Polyline){
+    public void decodePolyline(String Polyline,int TransportType) {
+        int colour = TransportColour.get(TransportType);
         List<LatLng> decodedPath = PolyUtil.decode(Polyline);
-        com.google.android.gms.maps.model.Polyline line = null;
-        if (line == null) {
-            line = mMap.addPolyline(new PolylineOptions()
-                    .width(8)
-                    .color(Color.rgb(25, 151, 152))
-                    .geodesic(true)
-                    .addAll(decodedPath));
-        }
+        com.google.android.gms.maps.model.Polyline line = mMap.addPolyline(new PolylineOptions()
+                .width(8)
+                .color(colour)
+                .geodesic(true)
+                .addAll(decodedPath));
 
     }
 
