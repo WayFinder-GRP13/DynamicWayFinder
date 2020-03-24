@@ -27,6 +27,7 @@ public class ServerHTTPRequestBuilder  extends HTTPRequestBuilder {
 
         //serverHTTPRequest.append("https://group13aseserver.herokuapp.com/");
         serverHTTPRequest.append("http://192.168.43.77:9009?");
+        //serverHTTPRequest.append("http://192.168.43.77:9009/luasroute?");
 
 
         return serverHTTPRequest.toString();

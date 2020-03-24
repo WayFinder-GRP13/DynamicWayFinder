@@ -1161,6 +1161,10 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         System.out.println("Response is: " + response);
         ArrayList<FinalRoute> finalRouteList = new ArrayList();
         JSONArray scores = null;
+        int walking = 0;
+        int bus = 0;
+        int luas = 0;
+        int cycling = 0;
         try {
             scores = new JSONArray(response);
             for (int i = 0; i < scores.length(); i++) {
@@ -1174,7 +1178,31 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 JSONObject origin = element.getJSONObject("origin");
                 Node originNode = new Node(origin.getString("name"), origin.getInt("stopId"), origin.getInt("transportType"), origin.getDouble("latitude"), origin.getDouble("longitudue"), origin.getDouble("score"));
                 int routeType = element.getInt("routeType");
-                finalRouteList.add(new FinalRoute(destNode, originNode, PolyLine,routeType));
+                int lengthMinutes = element.getInt("lengthMinutes");
+                String routeNumber = element.getString("routeNumber");
+                String departureTime = element.getString("departureTime");
+                if(routeType==0){
+                    walking+=lengthMinutes;
+                }
+                if(routeType==1){
+                    bus+=lengthMinutes;
+                }
+                if(routeType==2){
+
+                }
+                if(routeType==3){
+
+                }
+                finalRouteList.add(new FinalRoute(destNode, originNode, PolyLine,routeType,lengthMinutes,routeNumber, departureTime));
+
+                // update ui with route times
+                if(i==scores.length()-1){
+                    busTime.setText((bus/60)+" Mins");
+                    walkTime.setText((walking/60)+" Mins");
+                    bicycleTime.setText((cycling/60)+" Mins");
+                    trainTime.setText((luas/60)+" Mins");
+
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1182,24 +1210,38 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         }
         boolean firstTime=true;
         for (FinalRoute route : finalRouteList) {
-            //if(firstTime==true) {
-            addTransportMarker(route.getOrigin());
-            // firstTime=false;
-            //}
-            addTransportMarker(route.getDestination());
+
+            addTransportMarker(route.getDestination(),route);
+
+            //addTransportMarker(route.getDestination(),route);
             decodePolyline(route.getOverviewPolyline(),route.getRouteType());
-            System.out.println(route.getOverviewPolyline());
-            System.out.println(route.getOrigin().getStopId());
-            System.out.println(route.getDestination().getStopId());
+            System.out.println("polyline: "+route.getOverviewPolyline());
+            System.out.println("origin id: "+route.getOrigin().getStopId());
+            System.out.println("destination id: "+route.getDestination().getStopId());
+            System.out.println("route number: "+route.getRouteNumber());
         }
     }
 
 
-    public void addTransportMarker(Node point){
+    public void addTransportMarker(Node point,FinalRoute route){
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(new LatLng(point.getLatitude(),point.getLongitudue()));
-        markerOptions.title(point.getStopId()+"\n"+
-                "Stop ID: "+point.getStopId());
+        //walking
+        if(route.getRouteType()==0) {
+            markerOptions.title("Route: " + route.getRouteNumber()+" length: "+(route.getLengthMinutes()/60)+" Mins");
+        }
+        //bus
+        if(route.getRouteType()==1) {
+            markerOptions.title(point.getStopId() + " " + " Route: " + route.getRouteNumber()+ " departs: " + route.getDepartureTime()+" length: "+(route.getLengthMinutes()/60)+" Mins");
+        }
+        //cycling
+        if(route.getRouteType()==2) {
+            markerOptions.title(point.getStopId() + " " + " Route: " + route.getRouteNumber());
+        }
+        //train
+        if(route.getRouteType()==3) {
+            markerOptions.title(point.getStopId() + " " + " Route: " + route.getRouteNumber());
+        }
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         if (mMap != null)
             mMap.addMarker(markerOptions);
@@ -1213,11 +1255,27 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     public void decodePolyline(String Polyline,int TransportType) {
         int colour = TransportColour.get(TransportType);
         List<LatLng> decodedPath = PolyUtil.decode(Polyline);
-        com.google.android.gms.maps.model.Polyline line = mMap.addPolyline(new PolylineOptions()
-                .width(8)
-                .color(colour)
-                .geodesic(true)
-                .addAll(decodedPath));
+
+        final int PATTERN_DASH_LENGTH_PX = 20;
+        final int PATTERN_GAP_LENGTH_PX = 20;
+        final PatternItem DASH = new Dash(PATTERN_DASH_LENGTH_PX);
+        final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
+        final List<PatternItem> PATTERN_POLYGON_ALPHA = Arrays.asList(GAP, DASH);
+        if(TransportType==0) {
+            com.google.android.gms.maps.model.Polyline line = mMap.addPolyline(new PolylineOptions()
+                    .width(8)
+                    .color(colour)
+                    .geodesic(true)
+                    .addAll(decodedPath)
+                    .pattern(PATTERN_POLYGON_ALPHA));
+        }
+        else{
+            com.google.android.gms.maps.model.Polyline line = mMap.addPolyline(new PolylineOptions()
+                    .width(8)
+                    .color(colour)
+                    .geodesic(true)
+                    .addAll(decodedPath));
+        }
 
     }
 
