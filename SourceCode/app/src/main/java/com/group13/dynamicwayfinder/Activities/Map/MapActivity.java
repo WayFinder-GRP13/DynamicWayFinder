@@ -451,9 +451,41 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                             try {
                                 onMapSearch(destinationLocation);
 
+
+
+                                mTopSheetBehavior1.setState(TopSheetBehavior.STATE_EXPANDED);
+                                mTopSheetBehavior1.setPeekHeight(380);
+
+                                //toplayout.setVisibility(View.GONE);
+                                mTopSheetBehavior1.setTopSheetCallback(new TopSheetBehavior.TopSheetCallback() {
+                                    @Override
+                                    public void onStateChanged(@NonNull View topSheet, int newState) {
+
+                                        if (newState == TopSheetBehavior.STATE_EXPANDED) {
+                                            toplayout.setVisibility(LinearLayout.GONE);
+                                        }
+
+                                        if (newState == TopSheetBehavior.STATE_COLLAPSED) {
+                                            toplayout.setVisibility(LinearLayout.GONE);
+                                        }
+
+                                        if (newState == TopSheetBehavior.STATE_DRAGGING) {
+                                            toplayout.setVisibility(LinearLayout.GONE);
+                                        }
+
+                                    }
+
+                                    @Override
+                                    public void onSlide(@NonNull View bottomSheet, float slideOffset, @Nullable Boolean isOpening) {
+
+                                    }
+                                });
+
+
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+
 
 
                             return true;
@@ -558,7 +590,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onClick(View v) {
                 if (mTopSheetBehavior1.getState() == TopSheetBehavior.STATE_COLLAPSED) {
+
                     mTopSheetBehavior1.setState(TopSheetBehavior.STATE_EXPANDED);
+
                     ImageView weatehr_icon = findViewById(R.id.weather_icon);
 
                     String imageUrl = "https://openweathermap.org/img/wn/" + getWeather() + "@2x.png";
@@ -572,11 +606,47 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                         @Override
                         public void onClick(View v) {
 
+                            ///When back arrow is clicked resets the old TopSheet State
+
+
+
                             mTopSheetBehavior1.setState(TopSheetBehavior.STATE_COLLAPSED);
+
+                            //toplayout.setVisibility(View.GONE);
+                            mTopSheetBehavior1.setTopSheetCallback(new TopSheetBehavior.TopSheetCallback() {
+                                @Override
+                                public void onStateChanged(@NonNull View topSheet, int newState) {
+
+                                    if (newState == TopSheetBehavior.STATE_EXPANDED) {
+                                        toplayout.setVisibility(LinearLayout.GONE);
+                                    }
+
+                                    if (newState == TopSheetBehavior.STATE_COLLAPSED) {
+                                        toplayout.setVisibility(LinearLayout.VISIBLE);
+                                    }
+
+                                    if (newState == TopSheetBehavior.STATE_DRAGGING) {
+                                        toplayout.setVisibility(LinearLayout.GONE);
+                                    }
+
+                                }
+
+                                @Override
+                                public void onSlide(@NonNull View bottomSheet, float slideOffset, @Nullable Boolean isOpening) {
+
+                                }
+                            });
+
+                            mTopSheetBehavior1.setPeekHeight(125);
                             mMap.clear();
 
                             startingLocation.setText(null);
                             destinationLocation.setText(null);
+
+                            trainTime.setText("------");
+                            walkTime.setText("------");
+                            busTime.setText("------");
+                            bicycleTime.setText("------");
 
 
                         }
@@ -745,7 +815,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     //zoomRoute(mMap,roufteList2);
                     serverRequestStartPos = loca;
                     serverRequestEndPos = latLng;
-                    callServer();
+                    //callServer();
                     getRoute(loca, latLng);
 
 
@@ -775,7 +845,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                         serverRequestStartPos = latLngStart;
                         serverRequestEndPos = latLng;
-                        callServer();
+                        //callServer();
 
                         zoomRoute(mMap, routeList);
                     } catch (IOException e) {
@@ -1511,8 +1581,29 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             zoomRoute(mMap,point_list);
 
 
-
-
+           //add popup to the route
+//            View dialogView = getLayoutInflater().inflate(R.layout.route_popup,null);
+//            AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+//            builder.setView(dialogView);
+//
+//            TextView time_pop = dialogView.findViewById(R.id.title1);
+//            TextView mode_pop = dialogView.findViewById(R.id.description);
+//
+//            ImageView image_route = dialogView.findViewById(R.id.img);
+//
+//
+//            time_pop.setText(min + " Mins");
+//            mode_pop.setText("walking");
+//            image_route.setBackgroundResource(R.drawable.iconfinder_ic_directions_walk_48px_352319);
+//            alertDialog = builder.create();
+//
+//
+//            alertDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+//
+//            WindowManager.LayoutParams params = alertDialog.getWindow().getAttributes();
+//            params.y = 700;
+//            alertDialog.getWindow().setAttributes(params);
+//            alertDialog.show();
 
 
         }
