@@ -112,7 +112,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     int max = 10;
     int min = 1;
 
-    LinearLayout tapactionlayout, toplayout;
+    LinearLayout tapactionlayout, toplayout, linearSearch;
     private SeekBar seekBarSpeed, seekBarEnv, seekBarCost;
     View bottomSheet, topSheet, bottomSheet2;
     private SearchView sv;
@@ -224,6 +224,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         floatingActionButton = findViewById(R.id.fab);
         tapactionlayout = findViewById(R.id.tap_action_layout);
         toplayout = findViewById(R.id.top_tap_action);
+        linearSearch = findViewById(R.id.LinearSearch);
 
 
         topSheet = findViewById(R.id.searchbardisplay);
@@ -1640,6 +1641,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
            //add popup to the route
+
 //            View dialogView = getLayoutInflater().inflate(R.layout.route_popup,null);
 //            AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
 //            builder.setView(dialogView);
@@ -1730,7 +1732,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         alertDialog.show();
     }
 
-//    public static Bitmap createCustomMarker(Context context, @DrawableRes int resource, String _name) {
 
 
 
