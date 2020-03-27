@@ -78,10 +78,14 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
             Intent goHome = new Intent(MainActivity.this, MapActivity.class);
+
             startActivity(goHome);
             finish();
         }
     }
+
+
+
     @Override
     public void onStop() {
         super.onStop();
@@ -169,6 +173,9 @@ public class MainActivity extends AppCompatActivity {
 
         progressBar.setVisibility(View.VISIBLE);
 
+
+
+
         mAuth.signInWithEmailAndPassword(user, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -176,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
                         progressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
+
                             Intent goHome = new Intent(MainActivity.this, MapActivity.class);
                             MainActivity.this.startActivity(goHome);
                             MainActivity.this.finish();

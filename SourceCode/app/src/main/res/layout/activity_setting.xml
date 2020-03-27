@@ -44,7 +44,8 @@
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+           >
 
                 <TextView
                     android:textColor="@android:color/black"
@@ -59,7 +60,8 @@
                     android:padding="15dp"
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    >
 
 <!--                    <LinearLayout-->
 <!--                        android:layout_weight="1"-->
@@ -106,7 +108,8 @@
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        >
 
                         <RelativeLayout
                             android:layout_margin="10dp"
@@ -146,7 +149,8 @@
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        >
 
                         <RelativeLayout
                             android:layout_margin="10dp"
@@ -187,7 +191,8 @@
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        >
 
                         <RelativeLayout
                             android:layout_margin="10dp"
@@ -231,7 +236,8 @@
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        >
 
 
                         <RelativeLayout
@@ -287,7 +293,8 @@
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                >
 
                 <TextView
                     android:textColor="@android:color/black"
@@ -299,6 +306,7 @@
                     android:textStyle="bold"/>
 
                 <LinearLayout
+                    android:id="@+id/swappingLinear"
                     android:padding="15dp"
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
@@ -340,10 +348,23 @@
 
 
                     <LinearLayout
+                        android:id="@+id/EnvLinear"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        >
+
+                        <TextView
+                            android:id="@+id/envPrio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="-"
+                            android:textColor="@color/mapbox_blue"
+                            android:textSize="15sp"
+
+                            />
 
                         <RelativeLayout
                             android:layout_width="60dp"
@@ -377,10 +398,22 @@
 
 
                     <LinearLayout
+                        android:id="@+id/CostLinear"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/costPrio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="-"
+                            android:textColor="@color/mapbox_blue"
+                            android:textSize="15sp"
+
+                            />
 
                         <RelativeLayout
                             android:layout_width="60dp"
@@ -414,11 +447,23 @@
 
 
                     <LinearLayout
+                        android:id="@+id/TimeLinear"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+
                         android:orientation="vertical">
 
+                        <TextView
+                            android:id="@+id/timePrio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="-"
+                            android:textColor="@color/mapbox_blue"
+                            android:textSize="15sp"
+
+                            />
 
                         <RelativeLayout
                             android:layout_width="60dp"
@@ -563,6 +608,14 @@
 
         </androidx.cardview.widget.CardView>
 
+
+<Button
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/logOutButton"
+    android:layout_gravity="center"
+    android:layout_marginTop="20dp"
+    android:text="Log Out"/>
 
 
 <!--        <androidx.cardview.widget.CardView-->

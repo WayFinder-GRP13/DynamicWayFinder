@@ -178,13 +178,13 @@
                     android:paddingTop="20dp">
 
 
-                    <!--                    <TextView-->
-                    <!--                        android:id="@+id/carTime"-->
-                    <!--                        android:layout_width="70dp"-->
-                    <!--                        android:layout_height="wrap_content"-->
-                    <!--                        android:gravity="center"-->
-                    <!--                        android:text="&#45;&#45;&#45;&#45;&#45;&#45;"-->
-                    <!--                        android:textColor="@color/grey" />-->
+<!--                                        <TextView-->
+<!--                                            android:id="@+id/carTime"-->
+<!--                                            android:layout_width="70dp"-->
+<!--                                            android:layout_height="wrap_content"-->
+<!--                                            android:gravity="center"-->
+<!--                                            android:text="&#45;&#45;&#45;&#45;&#45;&#45;"-->
+<!--                                            android:textColor="@color/grey" />-->
 
                     <TextView
 
@@ -235,6 +235,18 @@
 
                         android:textColor="@color/grey" />
 
+                    <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                        android:textSize="10dp"
+
+                    android:gravity="center"
+
+                    android:text="Total Time"
+
+
+                    android:textColor="@color/grey" />
+
 
                 </LinearLayout>
 
@@ -282,6 +294,19 @@
 
                         android:saveEnabled="true"
                         android:src="@drawable/bike" />
+
+                    <TextView
+                    android:id="@+id/totalTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                        android:paddingLeft="10dp"
+
+                    android:layout_gravity="center"
+
+                    android:text="------"
+
+
+                    android:textColor="@color/grey" />
 
 
                 </LinearLayout>

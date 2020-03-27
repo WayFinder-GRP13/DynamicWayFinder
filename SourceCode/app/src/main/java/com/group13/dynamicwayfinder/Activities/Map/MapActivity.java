@@ -3,6 +3,7 @@ package com.group13.dynamicwayfinder.Activities.Map;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -54,10 +55,12 @@ import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.maps.android.PolyUtil;
+import com.group13.dynamicwayfinder.Activities.Authentication.MainActivity;
 import com.group13.dynamicwayfinder.R;
 import com.group13.dynamicwayfinder.Utils.HTTPGetRequest;
 import com.group13.dynamicwayfinder.Utils.RestAPIRequestInformation;
@@ -95,6 +98,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private TopSheetBehavior mTopSheetBehavior1;
     private ImageView backArrow;
     private ListView listView;
+    private Button logOutButton;
 
     private HashMap<Integer, Integer> TransportColour;
 
@@ -112,7 +116,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     int max = 10;
     int min = 1;
 
-    LinearLayout tapactionlayout, toplayout, linearSearch;
+    LinearLayout tapactionlayout, toplayout, linearSearch, swappingLinear,envLinear, costLinear, timeLinear;
     private SeekBar seekBarSpeed, seekBarEnv, seekBarCost;
     View bottomSheet, topSheet, bottomSheet2;
     private SearchView sv;
@@ -126,7 +130,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private TextView startingLocation, destinationLocation;
     private TextView trainTime, busTime, walkTime, bicycleTime;
     private TextView weather_status, weather_temperature;
-
+    private TextView costPrio,envPrio,speedPrio;
 
     //private TextView carTime;
 
@@ -172,6 +176,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         destinationLocation = findViewById(R.id.search3);
         startingLocation = findViewById(R.id.search);
         searchList = findViewById(R.id.searchListView);
+        logOutButton = findViewById(R.id.logOutButton);
 
         //carSwitch = findViewById(R.id.carSwitch);
         busSwitch = findViewById(R.id.busSwitch);
@@ -197,6 +202,14 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         seekBarEnv = findViewById(R.id.simpleSeekBarEnv);
         seekBarCost = findViewById(R.id.simpleSeekBarCost);
 
+        costPrio = findViewById(R.id.costPrio);
+        envPrio = findViewById(R.id.envPrio);
+        speedPrio = findViewById(R.id.timePrio);
+
+        swappingLinear = findViewById(R.id.swappingLinear);
+        envLinear = findViewById(R.id.EnvLinear);
+        costLinear = findViewById(R.id.CostLinear);
+        timeLinear = findViewById(R.id.TimeLinear);
         linearEnv = findViewById(R.id.enviormentImage);
         linearCost = findViewById(R.id.costImage);
         linearTime = findViewById(R.id.timeImage);
@@ -504,6 +517,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                 double valueEnv = min + (progress * step);
 
+
             }
 
             @Override
@@ -514,9 +528,121 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
+                int env = seekBar.getProgress();
+                int cost = seekBarCost.getProgress();
+                int speed = seekBarSpeed.getProgress();
+
+
+                if(speed >= env && speed >= cost && env <= cost){
+
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+
+
+                    speedPrio.setText("1");
+                    costPrio.setText("2");
+                    envPrio.setText("3");
+
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(envLinear);
+
+
+
+                }else if(speed >= env && speed >= cost  && env >= cost) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+
+
+                    speedPrio.setText("1");
+                    envPrio.setText("2");
+                    costPrio.setText("3");
+
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(costLinear);
+
+                }
+                else if(env >= speed && env >= cost && speed <= cost) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+                    envPrio.setText("1");
+                    costPrio.setText("2");
+                    speedPrio.setText("3");
+
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(timeLinear);
+
+
+
+                } else if(env >= speed && env >= cost && speed >= cost) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+                    envPrio.setText("1");
+                    costPrio.setText("3");
+                    speedPrio.setText("2");
+
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(costLinear);
+
+
+                }
+                else if(cost >= speed && cost >= env && speed <= env) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+
+
+                    costPrio.setText("1");
+                    envPrio.setText("2");
+                    speedPrio.setText("3");
+
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(timeLinear);
+
+
+
+
+
+
+                } else if(cost >= speed && cost >= env && speed >= env) {
+
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+                    costPrio.setText("1");
+                    envPrio.setText("3");
+                    speedPrio.setText("2");
+
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(envLinear);
+
+                }
 
             }
         });
+
+
 
         seekBarCost.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -534,8 +660,118 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
+                int env = seekBarEnv.getProgress();
+                int cost = seekBar.getProgress();
+                int speed = seekBarSpeed.getProgress();
+
+                if(speed >= env && speed >= cost && env <= cost){
+
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+
+
+                    speedPrio.setText("1");
+                    costPrio.setText("2");
+                    envPrio.setText("3");
+
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(envLinear);
+
+
+
+                }else if(speed >= env && speed >= cost  && env >= cost) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+
+
+                    speedPrio.setText("1");
+                    envPrio.setText("2");
+                    costPrio.setText("3");
+
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(costLinear);
+
+                }
+                else if(env >= speed && env >= cost && speed <= cost) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+                    envPrio.setText("1");
+                    costPrio.setText("2");
+                    speedPrio.setText("3");
+
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(timeLinear);
+
+
+
+                } else if(env >= speed && env >= cost && speed >= cost) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+                    envPrio.setText("1");
+                    costPrio.setText("3");
+                    speedPrio.setText("2");
+
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(costLinear);
+
+
+                }
+                else if(cost >= speed && cost >= env && speed <= env) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+
+
+                    costPrio.setText("1");
+                    envPrio.setText("2");
+                    speedPrio.setText("3");
+
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(timeLinear);
+
+
+
+
+
+
+                } else if(cost >= speed && cost >= env && speed >= env) {
+
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+                    costPrio.setText("1");
+                    envPrio.setText("3");
+                    speedPrio.setText("2");
+
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(envLinear);
+
+                }
 
             }
+
         });
 
         seekBarSpeed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -544,7 +780,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
                 double valueSpeed = min + (progress * step);
 
-                //System.out.println(valueSpeed);
 
             }
 
@@ -556,9 +791,121 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
+                int env = seekBarEnv.getProgress();
+                int cost = seekBarCost.getProgress();
+                int speed = seekBar.getProgress();
+
+                if(speed >= env && speed >= cost && env <= cost){
+
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+
+
+                    speedPrio.setText("1");
+                    costPrio.setText("2");
+                    envPrio.setText("3");
+
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(envLinear);
+
+
+
+                }else if(speed >= env && speed >= cost  && env >= cost) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+
+
+                    speedPrio.setText("1");
+                    envPrio.setText("2");
+                    costPrio.setText("3");
+
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(costLinear);
+
+                }
+                else if(env >= speed && env >= cost && speed <= cost) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+                    envPrio.setText("1");
+                    costPrio.setText("2");
+                    speedPrio.setText("3");
+
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(timeLinear);
+
+
+
+                } else if(env >= speed && env >= cost && speed >= cost) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+                    envPrio.setText("1");
+                    costPrio.setText("3");
+                    speedPrio.setText("2");
+
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(costLinear);
+
+
+                }
+                else if(cost >= speed && cost >= env && speed <= env) {
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+
+
+                    costPrio.setText("1");
+                    envPrio.setText("2");
+                    speedPrio.setText("3");
+
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(envLinear);
+                    swappingLinear.addView(timeLinear);
+
+
+
+
+
+
+                } else if(cost >= speed && cost >= env && speed >= env) {
+
+
+                    swappingLinear.removeView(envLinear);
+                    swappingLinear.removeView(costLinear);
+                    swappingLinear.removeView(timeLinear);
+
+                    costPrio.setText("1");
+                    envPrio.setText("3");
+                    speedPrio.setText("2");
+
+                    swappingLinear.addView(costLinear);
+                    swappingLinear.addView(timeLinear);
+                    swappingLinear.addView(envLinear);
+
+                }
+
 
             }
         });
+
+
 
 
         mTopSheetBehavior1 = TopSheetBehavior.from(topSheet);
@@ -693,6 +1040,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             }
         });
 
+        logOutButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Perform action on click
+
+                LogOut();
+            }
+        });
 
         mapFragment.getMapAsync(this);
 
@@ -1732,6 +2086,18 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         alertDialog.show();
     }
 
+
+    private void LogOut(){
+
+
+        FirebaseAuth.getInstance().signOut();
+
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+
+
+    }
 
 
 
