@@ -157,6 +157,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private LatLng serverRequestStartPos;
     private LatLng serverRequestEndPos;
 
+    LuasRouteCalculate luasRouteCalculate;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -1108,6 +1110,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 //            }
 //        });
 
+        luasRouteCalculate = new LuasRouteCalculate(mMap, getApplicationContext());
+        luasRouteCalculate.getLuasStops();
     }
 
 
@@ -1722,8 +1726,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         final String bicycletom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
                 +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=bicycle&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
-        final String traintom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
-                +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=van&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
+      //  final String traintom = "https://api.tomtom.com/routing/1/calculateRoute/" +start.latitude+"%2C"+start.longitude +"%3A"
+      //          +end.latitude + "%2C"+ end.longitude +"/json?routeRepresentation=polyline&avoid=unpavedRoads&travelMode=van&key=hsG3k8dTKXUpcbecSrGn3Gx4MWrCGAJG";
 
 
 
@@ -1865,64 +1869,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         }
 
         // TRAIN SWITCH ONLY
-
+        // LUAS ROUTE CALCULATE!
         else if(!busSwitchChecker && !bicycleChecker && trainChecker){
 
-
-           // Toast.makeText(getApplicationContext(),"Hello Javatpoint",Toast.LENGTH_SHORT).show();
-
-            ArrayList<LatLng> point_list = new ArrayList<>();
-            PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.color(Color.GREEN);
-            polylineOptions.width(15);
-
-
-            Log.d("route_api", traintom);
-
-            String response = null;
-            HTTPGetRequest routeAPI = new HTTPGetRequest();
-            JsonParser parser = new JsonParser();
-
-
-            try {
-                response = routeAPI.execute(traintom).get();
-                Log.d("route_api", response);
-                if(response != null){
-                    Log.d("route_api", walktom);
-                    Object object = parser.parse(response);
-                    JsonObject jsonObject = (JsonObject) object;
-                    JsonArray jsonArray = (JsonArray) jsonObject.get("routes");
-                    JsonObject object2 = (JsonObject) jsonArray.get(0);
-                    JsonArray routeArray = (JsonArray) object2.get("legs");
-                    JsonObject summary = (JsonObject)((JsonObject) routeArray.get(0)).get("summary");
-                    JsonArray routePoint = (JsonArray)((JsonObject) routeArray.get(0)).get("points");
-
-                    int min,hour =0;
-                    int sec;
-                    sec = summary.get("travelTimeInSeconds").getAsInt();
-
-                    hour = sec / 3600;
-                    min =  sec % 3600 / 60;
-
-                    if(hour == 0){
-                        trainTime.setText(min + " Mins");
-
-                    }else{
-                        trainTime.setText(hour + " H " + min + " M");
-                    }
-                    for (int i=0; i<routePoint.size(); i++){
-                        JsonObject point = (JsonObject) routePoint.get(i);
-                        point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
-                    }
-                }
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            polylineOptions.addAll(point_list);
-            mMap.addPolyline(polylineOptions);
-            zoomRoute(mMap,point_list);
+            luasRouteCalculate.getLuasDirection(start, end);
+            //zoomRoute(mMap,point_list);
 
 
         }
