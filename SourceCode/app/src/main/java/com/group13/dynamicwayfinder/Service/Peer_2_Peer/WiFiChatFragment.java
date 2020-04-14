@@ -32,9 +32,9 @@ public class WiFiChatFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_chat, container, false);
-        chatLine = (TextView) view.findViewById(R.id.txtChatLine);
+        chatLine = (TextView) view.findViewById(R.id.displayText);
         listView = (ListView) view.findViewById(android.R.id.list);
         adapter = new ChatMessageAdapter(getActivity(), android.R.id.text1,
                 items);
@@ -76,7 +76,7 @@ public class WiFiChatFragment extends Fragment {
         List<String> messages = null;
 
         public ChatMessageAdapter(Context context, int textViewResourceId,
-                List<String> items) {
+                                  List<String> items) {
             super(context, textViewResourceId, items);
         }
 

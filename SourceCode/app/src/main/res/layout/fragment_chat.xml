@@ -4,32 +4,50 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="50dip"
-        android:transcriptMode="alwaysScroll" >
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <!-- Preview: listitem=@android:layout/simple_list_item_1 -->
 
-    </ListView>
+        <EditText
+            android:id="@+id/searchp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Current Location"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:textColor="@color/black"
+            android:textSize="15sp" />
+
+
+        <EditText
+            android:id="@+id/search3p"
+            android:layout_width="434dp"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/ic_vert"
+            android:hint="Destination"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:textColor="@color/black"
+            android:textSize="15sp" />
+
+
+        <TextView
+            android:id="@+id/displayText"
+            android:layout_width="match_parent"
+            android:layout_height="47dp"
+            android:text="TextView" />
+    </LinearLayout>
+
+
+
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dip"
         android:layout_gravity="bottom" >
-
-        <EditText
-            android:id="@+id/txtChatLine"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_weight="0.90"
-            android:focusableInTouchMode="true"
-            android:hint="blah"
-            android:visibility="visible" >
-        </EditText>
 
         <Button
             android:id="@+id/button1"

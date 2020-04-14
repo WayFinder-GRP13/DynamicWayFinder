@@ -87,16 +87,16 @@ public class WiFiServiceDiscoveryActivity extends Activity implements
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            int[] grantResults) {
+                                           int[] grantResults) {
         switch (requestCode) {
-        case PERMISSIONS_REQUEST_CODE:
-            if  (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Log.e(TAG, "Fine location permission is not granted!");
-                finish();
-            } else {
-                startRegistrationAndDiscovery();
-            }
-            break;
+            case PERMISSIONS_REQUEST_CODE:
+                if  (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Log.e(TAG, "Fine location permission is not granted!");
+                    finish();
+                } else {
+                    startRegistrationAndDiscovery();
+                }
+                break;
         }
     }
 
@@ -122,8 +122,8 @@ public class WiFiServiceDiscoveryActivity extends Activity implements
                 .add(R.id.container_root, servicesList, "services").commit();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                    && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
+                && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_CODE);
             // After this point you wait for callback in
@@ -200,7 +200,7 @@ public class WiFiServiceDiscoveryActivity extends Activity implements
 
                     @Override
                     public void onDnsSdServiceAvailable(String instanceName,
-                            String registrationType, WifiP2pDevice srcDevice) {
+                                                        String registrationType, WifiP2pDevice srcDevice) {
 
                         // A service has been discovered. Is this our app?
 

@@ -44,7 +44,6 @@ public class GroupOwnerSocketHandler extends Thread {
     @Override
     public void run() {
         while (true) {
-            
             try {
                 // A blocking operation. Initiate a ChatManager instance when
                 // there is a new connection

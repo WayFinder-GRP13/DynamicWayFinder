@@ -66,7 +66,7 @@ public class ChatManager implements Runnable {
     }
 
     public void write(String msg) {
-        final byte[] buffer = msg.getBytes();
+      final  byte[] buffer = msg.getBytes();
         Thread thread = new Thread() {
             public void run() {
                 try {

@@ -43,7 +43,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
      * @param activity activity associated with the receiver
      */
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, Channel channel,
-            Activity activity) {
+                                       Activity activity) {
         super();
         this.manager = manager;
         this.channel = channel;
