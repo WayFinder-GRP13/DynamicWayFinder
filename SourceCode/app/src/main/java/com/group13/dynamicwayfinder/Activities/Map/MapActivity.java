@@ -13,6 +13,8 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -20,6 +22,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,9 +38,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatCallback;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -53,6 +59,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -87,7 +95,10 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 
-public class MapActivity extends AppCompatActivity implements AppCompatCallback, LocationListener, OnMapReadyCallback {
+public class MapActivity extends AppCompatActivity implements AppCompatCallback, LocationListener, OnMapReadyCallback, PlacesAutoCompleteAdapter.ClickListener {
+
+    private PlacesAutoCompleteAdapter mAutoCompleteAdapter;
+    private PlacesClient placesClient;
     private GoogleMap mMap;
     private android.location.LocationManager lm;
     private Marker markerLocation;
@@ -132,6 +143,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private TextView weather_status, weather_temperature;
     private TextView costPrio,envPrio,speedPrio;
 
+    private RecyclerView placesRv;
+
     //private TextView carTime;
 
     private boolean isChecked = true;
@@ -164,8 +177,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_activity);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
 
 
         TransportColour = new HashMap<>();
@@ -177,7 +188,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         exploreButton = findViewById(R.id.modesMap);
         destinationLocation = findViewById(R.id.search3);
         startingLocation = findViewById(R.id.search);
-        searchList = findViewById(R.id.searchListView);
+        //searchList = findViewById(R.id.searchListView);
         logOutButton = findViewById(R.id.logOutButton);
 
         //carSwitch = findViewById(R.id.carSwitch);
@@ -254,7 +265,27 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         seekBarCost.setMax((max - min) / step);
 
 
-        // starting location once they press enter a tag will show that location
+        // starting location once they press enter a tag will show that location List for addresses
+//        Places.initialize(getApplicationContext(), getString(R.string.google_map_key));
+//        placesClient = Places.createClient(this);
+//
+//        placesRv = findViewById(R.id.placesRv);
+
+        //placesRv.setVisibility(View.INVISIBLE);
+
+//        startingLocation.addTextChangedListener(filterTextWatcher);
+        //placesRv.setVisibility(View.VISIBLE);
+
+
+//        mAutoCompleteAdapter = new PlacesAutoCompleteAdapter(this, placesClient);
+//        placesRv.setLayoutManager(new LinearLayoutManager(this));
+//        mAutoCompleteAdapter.setClickListener(this);
+//        placesRv.setAdapter(mAutoCompleteAdapter);
+
+
+        
+
+
 
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -435,6 +466,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     switch (keyCode) {
                         case KeyEvent.KEYCODE_DPAD_CENTER:
                         case KeyEvent.KEYCODE_ENTER:
+
 
 
                             onMapSearchStarting(startingLocation);
@@ -1050,6 +1082,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             }
         });
 
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+
         mapFragment.getMapAsync(this);
 
         addressFetcher = new AddressFetcher(this);
@@ -1074,6 +1109,27 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         }
     }
 
+
+    private TextWatcher filterTextWatcher = new TextWatcher() {
+        public void afterTextChanged(Editable s) {
+            if (!s.toString().equals("")) {
+                mAutoCompleteAdapter.getFilter().filter(s.toString());
+            }
+        }
+
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        }
+
+    };
+
+    public void click(Place place) {
+        Toast.makeText(this, place.getAddress(), Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -1291,6 +1347,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
         }
     }
+
+
 
     public void zoomRoute(GoogleMap googleMap, List<LatLng> lstLatLngRoute) {
 
@@ -2050,6 +2108,13 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     }
 
+    @Override
+    public void click(com.google.android.libraries.places.api.model.Place place) {
+
+        Toast.makeText(this, place.getAddress(), Toast.LENGTH_SHORT).show();
+
+
+    }
 
 
 ///   Once user types into the textbar and finalizes location display a list of the top 5 locations
