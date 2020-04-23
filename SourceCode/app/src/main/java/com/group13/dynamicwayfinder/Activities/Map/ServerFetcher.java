@@ -22,12 +22,12 @@ public class ServerFetcher {
     }
 
     //gets the address for the current passed in location
-    public void sendServerRequest (RestAPIRequestInformation restAPIRequestInformation){
+    public void sendServerRequest (RestAPIRequestInformation restAPIRequestInformation,boolean BusRequest){
         //create a list and add the current location
         List serverRequestList = new ArrayList();
         serverRequestList.add(restAPIRequestInformation);
 
-        String HTTPRequest = serverHTTPRequestBuilder.URLStringBuilder(serverRequestList);
+        String HTTPRequest = serverHTTPRequestBuilder.URLStringBuilder(serverRequestList,BusRequest);
 
         ServerWrapperClass serverWrapperClass= new ServerWrapperClass(HTTPRequest,restAPIRequestInformation);
 

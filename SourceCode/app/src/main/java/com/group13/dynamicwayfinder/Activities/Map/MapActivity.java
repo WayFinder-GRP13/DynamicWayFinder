@@ -104,7 +104,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     public double currentLat;
     private ServerFetcher serverFetcher;
     public double valueEnv;
-    public double valueSpeed;
+    public double valueSpeed = 5;
     public double valueCost;
     private ListView searchList;
 
@@ -509,7 +509,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                double valueSpeed = min + (progress * step);
+                valueSpeed = min + (progress * step);
 
                 //System.out.println(valueSpeed);
 
@@ -641,10 +641,36 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             CarSettings carSettings = new CarSettings(true, 1);
             CycleSettings cycleSettings = new CycleSettings(true, 1);
             WalkSettings walkSettings = new WalkSettings(true, 1);
-            ScaleSettings scaleSettings = new ScaleSettings(5, 5, 5);
+            ScaleSettings scaleSettings = new ScaleSettings(5, 5, (int)valueSpeed);
             UserSettings userSettings = new UserSettings(1, busSettings, railSettings, carSettings, walkSettings, cycleSettings, scaleSettings);
-            serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings));
-        }
+            // less then 200m away
+            if(distanceTo(serverRequestStartPos.latitude,serverRequestStartPos.longitude,53.282318499999995,-6.292605099999999,"K")<.500){
+                System.out.println("/n/n/n/n/n/n/n/n/n   in required section    /n/n/n/n/n/n/n/n/n");
+                System.out.println("Value Speed: "+valueSpeed);
+                System.out.println("End latitude: "+serverRequestEndPos.latitude);
+                System.out.println("End longitude: "+serverRequestEndPos.longitude);
+                //EndLocation
+//                double MidPointLatitude = 53.3252667;
+//                double MidPointLogitude = -6.2549962;
+            // 53.32328806,"longitudue":-6.265598056
+                double MidPointLatitude = 0;
+                double MidPointLogitude = 0;
+                // checks for speed
+                if(valueSpeed>8) {
+                    MidPointLatitude = 53.3218816;
+                    MidPointLogitude = -6.2655052;
+                }
+                else{
+                    MidPointLatitude = 53.3252667;
+                    MidPointLogitude = -6.2549962;
+                }
+                //split locations up
+               serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(MidPointLatitude), String.valueOf(MidPointLogitude), userSettings),true);
+               serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(MidPointLatitude), String.valueOf(MidPointLogitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings),false);
+           }else {
+                serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), true);
+            }
+            }
     }
 
 
@@ -746,7 +772,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     serverRequestStartPos = loca;
                     serverRequestEndPos = latLng;
                     callServer();
-                    getRoute(loca, latLng);
+                   // getRoute(loca, latLng);
 
 
                 } else {
@@ -771,7 +797,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
                         //System.out.println(routeList);
-                        getRoute(latLngStart, latLng);
+                        //getRoute(latLngStart, latLng);
 
                         serverRequestStartPos = latLngStart;
                         serverRequestEndPos = latLng;
@@ -1138,17 +1164,30 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             e.printStackTrace();
             System.out.println("Error couldn't parse result");
         }
-        boolean firstTime=true;
+
+        boolean firstTime = true;
+
+        int counter = 0;
         for (FinalRoute route : finalRouteList) {
 
-            addTransportMarker(route.getDestination(),route);
-
+            if(route.getRouteNumber().contains("luas") && (counter==0||counter==finalRouteList.size()-1)) {
+                if(counter==0) {
+                    addTransportMarker(route.getOrigin(), route);
+                }else{
+                    addTransportMarker(route.getDestination(), route);
+                }
+            }
+            else if(!route.getRouteNumber().contains("luas")){
+                addTransportMarker(route.getDestination(), route);
+            }
+            counter++;
             //addTransportMarker(route.getDestination(),route);
             decodePolyline(route.getOverviewPolyline(),route.getRouteType());
             System.out.println("polyline: "+route.getOverviewPolyline());
             System.out.println("origin id: "+route.getOrigin().getStopId());
             System.out.println("destination id: "+route.getDestination().getStopId());
             System.out.println("route number: "+route.getRouteNumber());
+            System.out.println("route type: "+route.getRouteType());
         }
     }
 
@@ -1714,8 +1753,17 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 //        });
 
 
-
-
+public double distanceTo(double lat1,double lon1,double lat2,double lon2, String unit) {
+    double theta = lon1 - lon2;
+    double dist = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
+    dist = Math.acos(dist);
+    dist = Math.toDegrees(dist);
+    dist = dist * 60 * 1.1515;
+    if (unit.equals("K")) {
+        dist = dist * 1.609344;
+    }
+    return dist;
+}
 
 
 }
