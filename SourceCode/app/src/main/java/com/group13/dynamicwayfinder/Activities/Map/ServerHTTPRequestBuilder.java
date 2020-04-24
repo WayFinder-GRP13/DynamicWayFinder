@@ -12,7 +12,7 @@ import static android.content.ContentValues.TAG;
 public class ServerHTTPRequestBuilder  extends HTTPRequestBuilder {
 
     @Override
-    public String URLStringBuilder(List inputList) {
+    public String URLStringBuilder(List inputList,boolean BusRequest) {
         //Creates a string in the form of http request for google api
         System.out.println("The type of this class is: " + inputList.get(0).getClass().getName());
         System.out.println("Array size is: " + inputList.size());
@@ -25,11 +25,22 @@ public class ServerHTTPRequestBuilder  extends HTTPRequestBuilder {
 
         StringBuilder serverHTTPRequest = new StringBuilder();
 
-        //serverHTTPRequest.append("https://group13aseserver.herokuapp.com/");
-        serverHTTPRequest.append("http://192.168.43.77:9009?");
-        //serverHTTPRequest.append("http://192.168.43.77:9009/luasroute?");
+        if (BusRequest){
+            //serverHTTPRequest.append("https://group13aseserver.herokuapp.com/");
+            serverHTTPRequest.append("http://192.168.0.122:9009?");
+        }else{
+            serverHTTPRequest.append("http://192.168.0.122:9009/luasroute");
+        }
 
 
+
+        return serverHTTPRequest.toString();
+    }
+
+    @Override
+    public String URLStringBuilderDistance(List serverRequestList) {
+        StringBuilder serverHTTPRequest = new StringBuilder();
+        serverHTTPRequest.append("http://192.168.0.122:9009/closeststopluas");
         return serverHTTPRequest.toString();
     }
 }

@@ -29,7 +29,7 @@ public class AddressFetcher {
         List locationList = new ArrayList();
         locationList.add(CurrentLocation);
 
-        String HTTPRequest = locationHTTPRequestBuilder.URLStringBuilder(locationList);
+        String HTTPRequest = locationHTTPRequestBuilder.URLStringBuilder(locationList,true);
 
         HTTPLocationRequest locationRequest = new HTTPLocationRequest(this);
 

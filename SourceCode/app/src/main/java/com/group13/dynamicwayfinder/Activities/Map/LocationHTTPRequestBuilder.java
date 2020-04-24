@@ -13,7 +13,7 @@ import static android.content.ContentValues.TAG;
 public class LocationHTTPRequestBuilder extends HTTPRequestBuilder {
 
     @Override
-    public String URLStringBuilder(List inputList) {
+    public String URLStringBuilder(List inputList, boolean needed) {
         //Creates a string in the form of http request for google api
         System.out.println("The type of this class is: "+inputList.get(0).getClass().getName());
         System.out.println("Array size is: "+inputList.size());
@@ -36,5 +36,10 @@ public class LocationHTTPRequestBuilder extends HTTPRequestBuilder {
         LocationHTTPRequest.append("key=AIzaSyCqCdlPmegML3DEtc7BL9X1RFVsm8lEBbE");
 
         return LocationHTTPRequest.toString();
+    }
+
+    @Override
+    public String URLStringBuilderDistance(List serverRequestList) {
+        return null;
     }
 }

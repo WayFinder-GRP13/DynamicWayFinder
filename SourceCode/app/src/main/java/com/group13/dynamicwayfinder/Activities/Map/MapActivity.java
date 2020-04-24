@@ -69,7 +69,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.maps.android.PolyUtil;
 import com.group13.dynamicwayfinder.Activities.Authentication.MainActivity;
+
 import com.group13.dynamicwayfinder.R;
+import com.group13.dynamicwayfinder.Utils.AccelerometerClass;
 import com.group13.dynamicwayfinder.Utils.HTTPGetRequest;
 import com.group13.dynamicwayfinder.Utils.RestAPIRequestInformation;
 import com.group13.dynamicwayfinder.Utils.ServerClasses.FinalRoute;
@@ -111,6 +113,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private ListView listView;
     private Button logOutButton;
 
+    private AccelerometerClass accelerometerClass;
+    private UserSettings userSettings;
+
     private HashMap<Integer, Integer> TransportColour;
 
     private Address location;
@@ -118,9 +123,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     public double currentLong;
     public double currentLat;
     private ServerFetcher serverFetcher;
-    public double valueEnv;
-    public double valueSpeed;
-    public double valueCost;
+    public double valueEnv = 1;
+    public double valueSpeed = 1;
+    public double valueCost = 1;
     private ListView searchList;
 
     int step = 1;
@@ -149,6 +154,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     private boolean isChecked = true;
 
+    private double midLatitude = 0.0;
+    private double midLongitude = 0.0;
+
     private Switch trainSwitch, busSwitch, walkSwitch, bicycleSwitch;
 
     //private Switch carSwitch;
@@ -157,6 +165,12 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     private boolean bicycleChecked = false;
     //private boolean carChecked = false;
     private boolean trainChecked = false;
+
+    // used for times
+    int walking = 0;
+    int bus = 0;
+    int luas = 0;
+    int cycling = 0;
 
 
     private Switch s;
@@ -177,6 +191,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_activity);
+
+
 
 
         TransportColour = new HashMap<>();
@@ -549,7 +565,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                double valueEnv = min + (progress * step);
+                valueEnv = min + (progress * step);
 
 
             }
@@ -682,7 +698,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                double valueCost = min + (progress * step);
+                 valueCost = min + (progress * step);
 
             }
 
@@ -812,7 +828,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                double valueSpeed = min + (progress * step);
+                 valueSpeed = min + (progress * step);
 
 
             }
@@ -1094,20 +1110,76 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     }
 
     // this method calls the server
-    private void callServer () {
+    public void callServer () {
         System.out.println("here");
         if (serverRequestStartPos != null && serverRequestEndPos != null) {
+
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            accelerometerClass = new AccelerometerClass(this,getApplicationContext());
+            accelerometerClass.setup();
+            walking = 0;
+            bus = 0;
+            luas = 0;
+            cycling = 0;
             System.out.println("inside if statement");
             BusSettings busSettings = new BusSettings(true, 1);
             RailSettings railSettings = new RailSettings(true, 1);
             CarSettings carSettings = new CarSettings(true, 1);
             CycleSettings cycleSettings = new CycleSettings(true, 1);
             WalkSettings walkSettings = new WalkSettings(true, 1);
-            ScaleSettings scaleSettings = new ScaleSettings(5, 5, 5);
+            ScaleSettings scaleSettings = new ScaleSettings(seekBarEnv.getProgress(), seekBarCost.getProgress(), seekBarSpeed.getProgress());
             UserSettings userSettings = new UserSettings(1, busSettings, railSettings, carSettings, walkSettings, cycleSettings, scaleSettings);
-            serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings));
+
+            this.userSettings=userSettings;
+            // only walking enabled
+            if(!busChecked && !trainChecked) {
+
+                getRoute(new LatLng(serverRequestStartPos.latitude, serverRequestStartPos.longitude),new LatLng(serverRequestEndPos.latitude, serverRequestEndPos.longitude));
+                return;
+            }
+
+
+            // if any of 3 modes not ticked go in here
+           if(!busChecked || !trainChecked) {
+               //train
+               if ( !busChecked || trainChecked) {
+                   serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings),false);
+                   return;
+               }
+               //bus
+               if ( busChecked || !trainChecked) {
+                   serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), true);
+                   return;
+               }
+           }
+
+
+            if(seekBarCost.getProgress()>8){
+                serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), true);
+                return;
+            }
+
+            //split locations up and run multi model
+            double MidPointLatitude = (serverRequestStartPos.latitude+serverRequestEndPos.latitude)/2.0;
+            double MidPointLogitude = (serverRequestStartPos.longitude+serverRequestEndPos.longitude)/2.0;
+            midLatitude = 0.0;
+            midLongitude = 0.0;
+            // launches multimodel server calls
+            serverFetcher.sendDistanceRequest(MidPointLatitude,MidPointLogitude);
+//            serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(MidPointLatitude), String.valueOf(MidPointLogitude), userSettings),true);
+//            serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(MidPointLatitude), String.valueOf(MidPointLogitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings),false);
+            }else {
+               // serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), true);
+            }
         }
-    }
+
+
 
 
     private TextWatcher filterTextWatcher = new TextWatcher() {
@@ -1230,8 +1302,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     //zoomRoute(mMap,roufteList2);
                     serverRequestStartPos = loca;
                     serverRequestEndPos = latLng;
-                    //callServer();
-                    getRoute(loca, latLng);
+                    callServer();
+                    //getRoute(loca, latLng);
 
 
                 } else {
@@ -1256,11 +1328,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
                         //System.out.println(routeList);
-                        getRoute(latLngStart, latLng);
+                        //getRoute(latLngStart, latLng);
 
                         serverRequestStartPos = latLngStart;
                         serverRequestEndPos = latLng;
-                        //callServer();
+                        callServer();
 
                         zoomRoute(mMap, routeList);
                     } catch (IOException e) {
@@ -1572,16 +1644,36 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
+    public void RunMultiModel(){
+
+        serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(midLatitude), String.valueOf(midLongitude), userSettings),true);
+        serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(midLatitude), String.valueOf(midLongitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings),false);
+
+
+    }
+
+
+    public void ParseDistanceResult(String JSONFile){
+        try {
+            JSONObject element = new JSONObject(JSONFile);
+            System.out.println("Element: " + element);
+            midLatitude = element.getDouble("lat");
+            midLongitude = element.getDouble("lng");
+            System.out.println("Parsed latitude: "+midLatitude);
+            System.out.println("Parsed longitude: "+midLongitude);
+            RunMultiModel();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
     // this method draws the route on the map
     public void updateRouteOnMap(String response) {
         System.out.println("Response is: " + response);
         ArrayList<FinalRoute> finalRouteList = new ArrayList();
         JSONArray scores = null;
-        int walking = 0;
-        int bus = 0;
-        int luas = 0;
-        int cycling = 0;
+
         try {
             scores = new JSONArray(response);
             for (int i = 0; i < scores.length(); i++) {
@@ -1605,7 +1697,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     bus+=lengthMinutes;
                 }
                 if(routeType==2){
-
+                    luas+=lengthMinutes;
                 }
                 if(routeType==3){
 
@@ -1626,17 +1718,40 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             System.out.println("Error couldn't parse result");
         }
         boolean firstTime=true;
+        int counter = 0;
+
         for (FinalRoute route : finalRouteList) {
-
-            addTransportMarker(route.getDestination(),route);
-
-            //addTransportMarker(route.getDestination(),route);
             decodePolyline(route.getOverviewPolyline(),route.getRouteType());
             System.out.println("polyline: "+route.getOverviewPolyline());
             System.out.println("origin id: "+route.getOrigin().getStopId());
             System.out.println("destination id: "+route.getDestination().getStopId());
             System.out.println("route number: "+route.getRouteNumber());
+            System.out.println("route type: "+route.getRouteType());
+
+
+            //if(finalRouteList.get(finalRouteList.size()/2).getRouteNumber().contains("Green Line") && (counter==finalRouteList.size()-2)) {
+
+                    //addTransportMarker(finalRouteList.get(0).getOrigin(), finalRouteList.get(2));
+                    //addTransportMarker(route.getDestination(), route);
+                    //return;
+
+//            }
+//            else if(!route.getRouteNumber().contains("Green Line")){
+//                addTransportMarker(route.getDestination(), route);
+//            }
+            counter++;
+            //addTransportMarker(route.getDestination(),route);
+
         }
+        addTransportMarker(finalRouteList.get(0).getDestination(), finalRouteList.get(0));
+        //addTransportMarker(finalRouteList.get(1).getDestination(), finalRouteList.get(1));
+        // if luas
+        if(finalRouteList.get(0).getRouteType()==2) {
+            addTransportMarker(finalRouteList.get(0).getOrigin(), finalRouteList.get(0));
+        }else{
+            addTransportMarker(finalRouteList.get(0).getDestination(), finalRouteList.get(0));
+        }
+        addTransportMarker(finalRouteList.get(finalRouteList.size()-1).getDestination(), finalRouteList.get(finalRouteList.size()-1));
     }
 
 
@@ -1649,11 +1764,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         }
         //bus
         if(route.getRouteType()==1) {
-            markerOptions.title(point.getStopId() + " " + " Route: " + route.getRouteNumber()+ " departs: " + route.getDepartureTime()+" length: "+(route.getLengthMinutes()/60)+" Mins");
+            markerOptions.title(point.getStopId() + " " + " Route: " + route.getRouteNumber()+ " departs: " + route.getDepartureTime()+" length: "+(bus/60)+" Mins");
         }
-        //cycling
+        //train
         if(route.getRouteType()==2) {
-            markerOptions.title(point.getStopId() + " " + " Route: " + route.getRouteNumber());
+            markerOptions.title("Route: " + route.getRouteNumber()+" length: "+((luas/60))+" Mins");
         }
         //train
         if(route.getRouteType()==3) {
@@ -2187,7 +2302,17 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 //            }
 //        });
 
-
+    public double distanceTo(double lat1,double lon1,double lat2,double lon2, String unit) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
+        dist = Math.acos(dist);
+        dist = Math.toDegrees(dist);
+        dist = dist * 60 * 1.1515;
+        if (unit.equals("K")) {
+            dist = dist * 1.609344;
+        }
+        return dist;
+    }
 
 
 
