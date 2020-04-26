@@ -1083,7 +1083,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                 e.printStackTrace();
             }
 
-            accelerometerClass = new AccelerometerClass(this,getApplicationContext());
+            accelerometerClass = new AccelerometerClass(this, getApplicationContext());
             accelerometerClass.setup();
             walking = 0;
             bus = 0;
@@ -1098,48 +1098,49 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             ScaleSettings scaleSettings = new ScaleSettings(seekBarEnv.getProgress(), seekBarCost.getProgress(), seekBarSpeed.getProgress());
             UserSettings userSettings = new UserSettings(1, busSettings, railSettings, carSettings, walkSettings, cycleSettings, scaleSettings);
 
-            this.userSettings=userSettings;
+            this.userSettings = userSettings;
             // only walking enabled
-            if(!busChecked && !trainChecked) {
+            if (!busChecked && !trainChecked) {
 
-                getRoute(new LatLng(serverRequestStartPos.latitude, serverRequestStartPos.longitude),new LatLng(serverRequestEndPos.latitude, serverRequestEndPos.longitude));
+                getRoute(new LatLng(serverRequestStartPos.latitude, serverRequestStartPos.longitude), new LatLng(serverRequestEndPos.latitude, serverRequestEndPos.longitude));
                 return;
             }
 
 
             // if any of 3 modes not ticked go in here
-           if(!busChecked || !trainChecked) {
-               //train
-               if ( !busChecked || trainChecked) {
-                   serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings),false);
-                   return;
-               }
-               //bus
-               if ( busChecked || !trainChecked) {
-                   serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), true);
-                   return;
-               }
-           }
+            if (!busChecked || !trainChecked) {
+                //train
+                if (!busChecked || trainChecked) {
+                    serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), false);
+                    return;
+                }
+                //bus
+                if (busChecked || !trainChecked) {
+                    serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), true);
+                    return;
+                }
+            }
 
 
-            if(seekBarCost.getProgress()>8){
+            if (seekBarCost.getProgress() > 8) {
                 serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), true);
+                return;
+            }
+            if (seekBarEnv.getProgress() > 8) {
+                serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), false);
                 return;
             }
 
             //split locations up and run multi model
-            double MidPointLatitude = (serverRequestStartPos.latitude+serverRequestEndPos.latitude)/2.0;
-            double MidPointLogitude = (serverRequestStartPos.longitude+serverRequestEndPos.longitude)/2.0;
+            double MidPointLatitude = (serverRequestStartPos.latitude + serverRequestEndPos.latitude) / 2.0;
+            double MidPointLogitude = (serverRequestStartPos.longitude + serverRequestEndPos.longitude) / 2.0;
             midLatitude = 0.0;
             midLongitude = 0.0;
-            // launches multimodel server calls
-            serverFetcher.sendDistanceRequest(MidPointLatitude,MidPointLogitude);
-//            serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(MidPointLatitude), String.valueOf(MidPointLogitude), userSettings),true);
-//            serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(MidPointLatitude), String.valueOf(MidPointLogitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings),false);
-            }else {
-               // serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings), true);
-            }
+            // launches duel server calls
+            serverFetcher.sendDistanceRequest(MidPointLatitude, MidPointLogitude);
+
         }
+    }
 
 
 
@@ -1606,12 +1607,9 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
-    public void RunMultiModel(){
-
+    public void RunDuelRequest(){
         serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(serverRequestStartPos.latitude), String.valueOf(serverRequestStartPos.longitude), String.valueOf(midLatitude), String.valueOf(midLongitude), userSettings),true);
         serverFetcher.sendServerRequest(new RestAPIRequestInformation(1, "mike", String.valueOf(midLatitude), String.valueOf(midLongitude), String.valueOf(serverRequestEndPos.latitude), String.valueOf(serverRequestEndPos.longitude), userSettings),false);
-
-
     }
 
 
@@ -1623,7 +1621,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
             midLongitude = element.getDouble("lng");
             System.out.println("Parsed latitude: "+midLatitude);
             System.out.println("Parsed longitude: "+midLongitude);
-            RunMultiModel();
+            RunDuelRequest();
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1633,6 +1631,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
     // this method draws the route on the map
     public void updateRouteOnMap(String response) {
         System.out.println("Response is: " + response);
+        // if server response less then 30 charecters its has failed call backup algo
+        if(response.length()<30){
+            getRoute(new LatLng(serverRequestStartPos.latitude, serverRequestStartPos.longitude), new LatLng(serverRequestEndPos.latitude, serverRequestEndPos.longitude));
+            return;
+        }
         ArrayList<FinalRoute> finalRouteList = new ArrayList();
         JSONArray scores = null;
 
