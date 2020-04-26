@@ -192,9 +192,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_activity);
 
-
-
-
         TransportColour = new HashMap<>();
         TransportColour.put(0, Color.GREEN); //walk
         TransportColour.put(1, Color.BLUE); //bus
@@ -218,7 +215,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         trainSwitch.setChecked(trainChecked);
         walkSwitch.setChecked(walkChecked);
         bicycleSwitch.setChecked(bicycleChecked);
-
 
         // carTime = findViewById(R.id.carTime);
         busTime = findViewById(R.id.busTime);
@@ -297,12 +293,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 //        placesRv.setLayoutManager(new LinearLayoutManager(this));
 //        mAutoCompleteAdapter.setClickListener(this);
 //        placesRv.setAdapter(mAutoCompleteAdapter);
-
-
-        
-
-
-
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             //@RequiresApi(api = Build.VERSION_CODES.M)
@@ -515,8 +505,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                             try {
                                 onMapSearch(destinationLocation);
 
-
-
                                 mTopSheetBehavior1.setState(TopSheetBehavior.STATE_EXPANDED);
                                 mTopSheetBehavior1.setPeekHeight(380);
 
@@ -608,8 +596,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     swappingLinear.removeView(costLinear);
                     swappingLinear.removeView(timeLinear);
 
-
-
                     speedPrio.setText("1");
                     envPrio.setText("2");
                     costPrio.setText("3");
@@ -667,11 +653,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     swappingLinear.addView(envLinear);
                     swappingLinear.addView(timeLinear);
 
-
-
-
-
-
                 } else if(cost >= speed && cost >= env && speed >= env) {
 
 
@@ -691,8 +672,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
             }
         });
-
-
 
         seekBarCost.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -720,8 +699,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     swappingLinear.removeView(envLinear);
                     swappingLinear.removeView(costLinear);
                     swappingLinear.removeView(timeLinear);
-
-
 
                     speedPrio.setText("1");
                     costPrio.setText("2");
@@ -788,8 +765,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     swappingLinear.removeView(costLinear);
                     swappingLinear.removeView(timeLinear);
 
-
-
                     costPrio.setText("1");
                     envPrio.setText("2");
                     speedPrio.setText("3");
@@ -798,13 +773,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     swappingLinear.addView(envLinear);
                     swappingLinear.addView(timeLinear);
 
-
-
-
-
-
                 } else if(cost >= speed && cost >= env && speed >= env) {
-
 
                     swappingLinear.removeView(envLinear);
                     swappingLinear.removeView(costLinear);
@@ -919,8 +888,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     swappingLinear.removeView(costLinear);
                     swappingLinear.removeView(timeLinear);
 
-
-
                     costPrio.setText("1");
                     envPrio.setText("2");
                     speedPrio.setText("3");
@@ -928,11 +895,6 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     swappingLinear.addView(costLinear);
                     swappingLinear.addView(envLinear);
                     swappingLinear.addView(timeLinear);
-
-
-
-
-
 
                 } else if(cost >= speed && cost >= env && speed >= env) {
 
@@ -1302,8 +1264,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     //zoomRoute(mMap,roufteList2);
                     serverRequestStartPos = loca;
                     serverRequestEndPos = latLng;
-                    callServer();
-                    //getRoute(loca, latLng);
+                    //callServer();
+                    getRoute(loca, latLng);
 
 
                 } else {
@@ -1328,11 +1290,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
                         //System.out.println(routeList);
-                        //getRoute(latLngStart, latLng);
+                        getRoute(latLngStart, latLng);
 
                         serverRequestStartPos = latLngStart;
                         serverRequestEndPos = latLng;
-                        callServer();
+                        //callServer();
 
                         zoomRoute(mMap, routeList);
                     } catch (IOException e) {
@@ -2045,8 +2007,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
         // LUAS ROUTE CALCULATE!
         else if(!busSwitchChecker && !bicycleChecker && trainChecker){
 
+            luasRouteCalculate.initTime();
             luasRouteCalculate.getLuasDirection(start, end);
             //zoomRoute(mMap,point_list);
+            trainTime.setText(luasRouteCalculate.getLuasTime() + " Min");
+            walkTime.setText(luasRouteCalculate.getWalkingTime() + " Min");
 
 
         }

@@ -50,6 +50,8 @@ public class LuasRouteCalculate {
 
     Context context;
 
+    int luasstop=0, walking_time =0;
+
     public LuasRouteCalculate(GoogleMap map, Context context) {
 
         this.mMap = map;
@@ -358,6 +360,9 @@ public class LuasRouteCalculate {
             getWalkiingDirection(start, start_stop);
             getWalkiingDirection(end, end_stop);
 
+            for(int i=0; i<red_route.size()-1; i++){
+                luasstop++;
+            }
         }
 
         //Green Line - Green Line
@@ -482,6 +487,10 @@ public class LuasRouteCalculate {
             mMap.addPolyline(new PolylineOptions().width(20).color(Color.GREEN).addAll(green_route));
             getWalkiingDirection(start, start_stop);
             getWalkiingDirection(end, end_stop);
+
+            for(int i =0; i<green_route.size(); i++){
+                luasstop++;
+            }
         }
 
         //RedLine - GreenLine
@@ -713,6 +722,14 @@ public class LuasRouteCalculate {
             }
             mMap.addPolyline(new PolylineOptions().width(20).color(Color.RED).addAll(red_route));
             mMap.addPolyline(new PolylineOptions().width(20).color(Color.GREEN).addAll(green_route));
+
+            for(int i=0; i<red_route.size()-1; i++){
+                luasstop++;
+            }
+
+            for(int i =0; i<green_route.size(); i++){
+                luasstop++;
+            }
         }
 
         //GreenLine - RedLine
@@ -899,8 +916,17 @@ public class LuasRouteCalculate {
                 getWalkiingDirection(inter_redStop, inter_green);
             }
 
+
             mMap.addPolyline(new PolylineOptions().width(20).color(Color.RED).addAll(red_route));
             mMap.addPolyline(new PolylineOptions().width(20).color(Color.GREEN).addAll(green_route));
+
+            for(int i=0; i<red_route.size()-1; i++){
+                luasstop++;
+            }
+
+            for(int i =0; i<green_route.size(); i++){
+                luasstop++;
+            }
         }
     }
 
@@ -940,6 +966,10 @@ public class LuasRouteCalculate {
                 hour = sec / 3600;
                 min = sec % 3600 / 60;
 
+                Log.d("walk_time",walking_time + " " + min);
+                walking_time = walking_time + min;
+                Log.d("walk_time", "new" + walking_time);
+
                 for (int i = 0; i < routePoint.size(); i++) {
                     JsonObject point = (JsonObject) routePoint.get(i);
                     point_list.add(new LatLng(Double.parseDouble(point.get("latitude").toString()), (Double.parseDouble(point.get("longitude").toString()))));
@@ -970,5 +1000,18 @@ public class LuasRouteCalculate {
         distance = locationA.distanceTo(locationB);
 
         return distance;
+    }
+
+    public int getLuasTime(){
+        return luasstop*2 +1;
+    }
+
+    public int getWalkingTime(){
+        return walking_time;
+    }
+
+    public void initTime(){
+        walking_time=0;
+        luasstop=0;
     }
 }
