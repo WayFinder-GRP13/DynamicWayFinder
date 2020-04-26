@@ -1264,8 +1264,8 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
                     //zoomRoute(mMap,roufteList2);
                     serverRequestStartPos = loca;
                     serverRequestEndPos = latLng;
-                    //callServer();
-                    getRoute(loca, latLng);
+                    callServer();
+                    //getRoute(loca, latLng);
 
 
                 } else {
@@ -1290,11 +1290,11 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
 
                         //System.out.println(routeList);
-                        getRoute(latLngStart, latLng);
+                        //getRoute(latLngStart, latLng);
 
                         serverRequestStartPos = latLngStart;
                         serverRequestEndPos = latLng;
-                        //callServer();
+                        callServer();
 
                         zoomRoute(mMap, routeList);
                     } catch (IOException e) {
