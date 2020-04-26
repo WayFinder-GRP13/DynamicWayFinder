@@ -2223,6 +2223,7 @@ public class MapActivity extends AppCompatActivity implements AppCompatCallback,
 
     }
 
+
     @Override
     public void click(com.google.android.libraries.places.api.model.Place place) {
 
